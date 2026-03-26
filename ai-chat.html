@@ -36,8 +36,8 @@
     <div class="container" style="height:100%">
       <section class="chat-shell">
         <aside class="chat-sidebar">
-          <h2 class="sidebar-title">AI Chat</h2>
-          <button class="new-chat" type="button" data-new-chat>Новый чат</button>
+          <h2 class="sidebar-title">ChatGPT</h2>
+          <button class="new-chat" type="button" data-new-chat>+ Новый чат</button>
           <div class="chat-history">
             <button type="button" data-chat-preset="Подбери белые вещи до 10000">Подбери белые вещи до 10000</button>
             <button type="button" data-chat-preset="Собери минималистичный образ">Собери минималистичный образ</button>
@@ -45,11 +45,14 @@
           </div>
         </aside>
         <div class="chat-main">
+          <div class="chat-topbar">
+            <div class="chat-model">ChatGPT 4o</div>
+          </div>
           <div class="chat-messages" data-chat-messages></div>
           <form class="chat-composer" data-chat-form>
             <div class="chat-box">
-              <textarea class="chat-textarea" data-chat-input placeholder="Напиши запрос: подобрать образ, уложиться в бюджет, найти категорию..." rows="1"></textarea>
-              <button class="chat-send" type="submit">Отправить</button>
+              <textarea class="chat-textarea" data-chat-input placeholder="Спроси что угодно" rows="1"></textarea>
+              <button class="chat-send" type="submit">↑</button>
             </div>
           </form>
         </div>
