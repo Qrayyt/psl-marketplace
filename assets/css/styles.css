@@ -48,6 +48,13 @@ button{border:0;background:none;color:inherit;cursor:pointer}
 .section-title{margin:0 0 6px;font-size:28px;letter-spacing:-.05em}
 .section-sub{color:var(--muted);font-size:14px}
 
+.hero-section{padding:6px 0 clamp(22px,3vw,38px)}
+.hero-banner{position:relative;min-height:clamp(300px,50vh,560px);border-radius:32px;overflow:hidden;border:1px solid rgba(17,17,17,.08);background:radial-gradient(circle at 30% 20%,#3b3b3b 0%,#111 48%,#000 100%);display:grid;place-items:center}
+.hero-banner::before{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.12),transparent 38%,rgba(255,255,255,.06) 70%,transparent)}
+.hero-overlay{position:relative;z-index:1;text-align:center;padding:20px}
+.hero-kicker{margin:0 0 8px;color:rgba(255,255,255,.78);font-size:12px;letter-spacing:.28em;text-transform:uppercase}
+.hero-title{margin:0;font-size:clamp(78px,17vw,240px);line-height:.82;letter-spacing:.08em;color:#fff;font-weight:800}
+
 .toolbar{display:grid;grid-template-columns:minmax(260px,1.15fr) minmax(180px,.85fr) minmax(180px,.9fr) minmax(180px,.85fr);gap:14px;align-items:center;margin:24px 0 14px}
 .field,.select,.search-btn{min-height:52px;border-radius:18px;border:1px solid var(--line);background:#fff;color:var(--text);outline:none}
 .field,.select{padding:0 16px}

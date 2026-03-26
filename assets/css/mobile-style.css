@@ -11,6 +11,10 @@
   .page-main,.chat-page{padding:16px 0 24px}
   .page-title,.product-title{font-size:28px}
   .page-sub{font-size:14px;line-height:1.45}
+  .hero-section{padding:0 0 14px}
+  .hero-banner{min-height:220px;border-radius:24px}
+  .hero-kicker{font-size:11px;letter-spacing:.22em}
+  .hero-title{font-size:clamp(64px,26vw,108px)}
   .toolbar{grid-template-columns:1fr 1fr;gap:10px}
   .toolbar .field:first-child,.toolbar .field:last-child{grid-column:1 / -1}
   .quickbar{display:block}
@@ -64,6 +68,8 @@
   :root{--container:min(100vw - 16px, 100vw - 16px)}
   .topbar-inner{gap:10px}
   .brand{letter-spacing:.2em}
+  .hero-banner{min-height:180px;border-radius:20px}
+  .hero-title{font-size:56px}
   .toolbar{grid-template-columns:1fr}
   .product-grid{grid-template-columns:1fr}
   .stats-grid{grid-template-columns:1fr 1fr}
