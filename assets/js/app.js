@@ -169,8 +169,9 @@
 
     root.innerHTML = list.map(cardHtml).join('');
     bindCardEvents(root);
-    const meta = document.querySelector('.catalog-meta');
-    if(meta){ meta.textContent = `Найдено ${list.length} товаров`; }
+    document.querySelectorAll('.catalog-meta,[data-mobile-meta]').forEach(meta => {
+      meta.textContent = `Найдено ${list.length} товаров`;
+    });
   }
 
   function cardHtml(p){
@@ -233,6 +234,26 @@
     const controls = document.querySelectorAll('[data-search],[data-category],[data-sort],[data-tags]');
     controls.forEach(el => el.addEventListener('input', renderProducts));
     controls.forEach(el => el.addEventListener('change', renderProducts));
+
+    const openFiltersBtn = document.querySelector('[data-open-filters]');
+    const closeFiltersBtn = document.querySelector('[data-close-filters]');
+    const filtersPanel = document.querySelector('[data-filters-panel]');
+    function setFiltersOpen(next){
+      document.body.classList.toggle('filters-open', !!next);
+    }
+    openFiltersBtn?.addEventListener('click', () => setFiltersOpen(true));
+    closeFiltersBtn?.addEventListener('click', () => setFiltersOpen(false));
+    filtersPanel?.addEventListener('click', e => e.stopPropagation());
+    document.addEventListener('click', e => {
+      if(!document.body.classList.contains('filters-open')) return;
+      const insidePanel = e.target.closest('[data-filters-panel]');
+      const opener = e.target.closest('[data-open-filters]');
+      if(!insidePanel && !opener){ setFiltersOpen(false); }
+    });
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape'){ setFiltersOpen(false); }
+    });
+
     document.querySelectorAll('[data-quick-category]').forEach(btn => {
       btn.addEventListener('click', () => {
         document.querySelectorAll('[data-quick-category]').forEach(x => x.classList.remove('active'));
@@ -240,6 +261,7 @@
         const select = document.querySelector('[data-category]');
         if(select){ select.value = btn.dataset.quickCategory; }
         renderProducts();
+        if(window.innerWidth <= 767){ setFiltersOpen(false); }
       });
     });
     renderProducts();

@@ -48,36 +48,48 @@
       <div class="container">
         <h2 class="page-title">Каталог</h2>
         <p class="page-sub">Чистая главная без лишних блоков: сверху бренд, ниже сразу товары, быстрые действия в карточках и отдельная страница продукта.</p>
-        <div class="toolbar">
-          <input class="field" type="search" placeholder="Поиск по названию, категории или цвету" data-search>
-          <select class="select" data-category>
-            <option value="all">Все категории</option>
-            <option>Топы</option>
-            <option>Худи</option>
-            <option>Брюки</option>
-            <option>Верхняя одежда</option>
-            <option>Аксессуары</option>
-            <option>Обувь</option>
-          </select>
-          <select class="select" data-sort>
-            <option value="popular">Сначала популярные</option>
-            <option value="new">Сначала новые</option>
-            <option value="rating">По рейтингу</option>
-            <option value="price-asc">Сначала дешевле</option>
-            <option value="price-desc">Сначала дороже</option>
-          </select>
-          <input class="field" type="text" placeholder="Теги: oversize, black" data-tags>
+        <div class="mobile-filters-bar">
+          <button class="mobile-filter-btn" type="button" data-open-filters>
+            <span>Фильтры</span>
+          </button>
+          <div class="catalog-meta mobile-meta" data-mobile-meta>Найдено 0 товаров</div>
         </div>
-        <div class="quickbar">
-          <div class="chips">
-            <button class="chip active" type="button" data-quick-category="all">Все</button>
-            <button class="chip" type="button" data-quick-category="Топы">Топы</button>
-            <button class="chip" type="button" data-quick-category="Худи">Худи</button>
-            <button class="chip" type="button" data-quick-category="Брюки">Брюки</button>
-            <button class="chip" type="button" data-quick-category="Аксессуары">Аксессуары</button>
-            <button class="chip" type="button" data-quick-category="Обувь">Обувь</button>
+        <div class="catalog-filters-panel" data-filters-panel>
+          <div class="filters-panel-head">
+            <h3 class="filters-panel-title">Фильтры</h3>
+            <button class="filters-close" type="button" data-close-filters aria-label="Закрыть фильтры">✕</button>
           </div>
-          <div class="catalog-meta">2 карточки в ряд на телефоне, 3 на планшете, 4 на десктопе.</div>
+          <div class="toolbar">
+            <input class="field" type="search" placeholder="Поиск по названию, категории или цвету" data-search>
+            <select class="select" data-category>
+              <option value="all">Все категории</option>
+              <option>Топы</option>
+              <option>Худи</option>
+              <option>Брюки</option>
+              <option>Верхняя одежда</option>
+              <option>Аксессуары</option>
+              <option>Обувь</option>
+            </select>
+            <select class="select" data-sort>
+              <option value="popular">Сначала популярные</option>
+              <option value="new">Сначала новые</option>
+              <option value="rating">По рейтингу</option>
+              <option value="price-asc">Сначала дешевле</option>
+              <option value="price-desc">Сначала дороже</option>
+            </select>
+            <input class="field" type="text" placeholder="Теги: oversize, black" data-tags>
+          </div>
+          <div class="quickbar">
+            <div class="chips">
+              <button class="chip active" type="button" data-quick-category="all">Все</button>
+              <button class="chip" type="button" data-quick-category="Топы">Топы</button>
+              <button class="chip" type="button" data-quick-category="Худи">Худи</button>
+              <button class="chip" type="button" data-quick-category="Брюки">Брюки</button>
+              <button class="chip" type="button" data-quick-category="Аксессуары">Аксессуары</button>
+              <button class="chip" type="button" data-quick-category="Обувь">Обувь</button>
+            </div>
+            <div class="catalog-meta">2 карточки в ряд на телефоне, 3 на планшете, 4 на десктопе.</div>
+          </div>
         </div>
         <div class="catalog-shell">
           <div class="product-grid" data-products></div>

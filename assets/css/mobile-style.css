@@ -15,9 +15,18 @@
   .hero-banner{min-height:220px;border-radius:24px}
   .hero-kicker{font-size:11px;letter-spacing:.22em}
   .hero-title{font-size:clamp(64px,26vw,108px)}
-  .toolbar{grid-template-columns:1fr 1fr;gap:10px}
+  .mobile-filters-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0 10px}
+  .mobile-filter-btn{min-height:42px;padding:0 14px;border-radius:999px;background:#111;color:#fff;font-weight:600;border:1px solid #111}
+  .mobile-meta{font-size:12px}
+  .catalog-filters-panel{position:fixed;left:0;right:0;bottom:0;z-index:75;background:#fff;border-radius:20px 20px 0 0;border:1px solid var(--line);border-bottom:0;padding:14px 12px calc(14px + env(safe-area-inset-bottom));max-height:78dvh;overflow:auto;transform:translateY(106%);transition:transform .25s ease,opacity .25s ease;opacity:0;pointer-events:none;box-shadow:0 -20px 40px rgba(17,17,17,.12)}
+  .filters-open .catalog-filters-panel{transform:translateY(0);opacity:1;pointer-events:auto}
+  .filters-open .site-shell::before{content:"";position:fixed;inset:0;z-index:70;background:rgba(17,17,17,.38)}
+  .filters-panel-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+  .filters-panel-title{margin:0;font-size:20px;letter-spacing:-.03em}
+  .filters-close{width:36px;height:36px;border:1px solid var(--line);border-radius:999px;display:grid;place-items:center}
+  .toolbar{grid-template-columns:1fr 1fr;gap:10px;margin:0}
   .toolbar .field:first-child,.toolbar .field:last-child{grid-column:1 / -1}
-  .quickbar{display:block}
+  .quickbar{display:block;margin:12px 0 2px}
   .catalog-meta{margin-top:10px}
   .catalog-shell{padding:12px;border-radius:22px}
   .product-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
@@ -71,7 +80,7 @@
   .hero-banner{min-height:180px;border-radius:20px}
   .hero-title{font-size:56px}
   .toolbar{grid-template-columns:1fr}
-  .product-grid{grid-template-columns:1fr}
+  .mobile-filters-bar{align-items:flex-start;flex-direction:column}
   .stats-grid{grid-template-columns:1fr 1fr}
   .profile-product{grid-template-columns:72px minmax(0,1fr)}
   .chat-send{min-width:82px;padding:0 10px}
