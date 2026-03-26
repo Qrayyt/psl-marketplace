@@ -162,13 +162,12 @@ button{border:0;background:none;color:inherit;cursor:pointer}
 .chat-model{font-size:14px;font-weight:600;letter-spacing:.01em}
 .chat-menu-btn{display:none;position:absolute;left:12px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:1px solid var(--line);border-radius:10px;padding:7px;gap:4px;flex-direction:column;justify-content:center}
 .chat-menu-btn span{display:block;height:2px;border-radius:999px;background:#111}
-.chat-messages{flex:1;padding:20px clamp(12px,4vw,36px) 110px;display:grid;align-content:start;gap:12px;overflow:auto;background:#fff}
-.msg{display:grid;grid-template-columns:26px minmax(0,1fr);gap:10px;align-items:start;max-width:860px;width:100%;margin:0 auto}
-.msg.user{grid-template-columns:minmax(0,1fr) 26px}
-.msg.user .avatar{order:2}
-.msg.user .bubble{order:1;background:#f2f2f2;padding:12px 14px;border-radius:14px}
-.avatar{width:26px;height:26px;border-radius:999px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;font-size:9px;font-weight:700;color:#666}
-.bubble{padding:0;background:transparent;max-width:100%;white-space:pre-wrap;word-break:break-word;line-height:1.55;color:#111}
+.chat-messages{flex:1;padding:20px clamp(14px,4vw,42px) 110px;display:grid;align-content:start;gap:18px;overflow:auto;background:#fff}
+.msg{max-width:860px;width:100%;margin:0 auto}
+.msg.user{display:flex;justify-content:flex-end}
+.msg.assistant{display:block}
+.bubble{padding:12px 14px;border-radius:14px;background:#f3f3f3;max-width:min(78ch,84%);white-space:pre-wrap;word-break:break-word;line-height:1.5;color:#111}
+.plain-text{max-width:78ch;white-space:pre-wrap;word-break:break-word;line-height:1.58;color:#111}
 .chat-composer{position:absolute;left:0;right:0;bottom:0;padding:12px clamp(12px,4vw,36px) 16px;background:linear-gradient(to top,#fff 80%,rgba(255,255,255,0))}
 .chat-box{display:flex;align-items:end;gap:10px;border:1px solid #d8d8d8;border-radius:22px;padding:8px 8px 8px 12px;background:#fff;max-width:860px;margin:0 auto}
 .chat-textarea{flex:1;min-height:46px;max-height:170px;border:0;resize:none;outline:none;background:transparent;padding:10px 0;color:#111;line-height:1.45}

@@ -467,9 +467,8 @@
     const root = document.querySelector('[data-chat-messages]');
     if(!root) return;
     root.innerHTML = state.chat.map(msg => `
-      <div class="msg ${msg.role === 'user' ? 'user' : ''}">
-        <div class="avatar">${msg.role === 'user' ? 'Вы' : 'AI'}</div>
-        <div class="bubble">${escapeHtml(msg.text)}</div>
+      <div class="msg ${msg.role === 'user' ? 'user' : 'assistant'}">
+        <div class="${msg.role === 'user' ? 'bubble' : 'plain-text'}">${escapeHtml(msg.text)}</div>
       </div>
     `).join('');
     root.scrollTop = root.scrollHeight;
