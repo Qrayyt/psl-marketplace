@@ -50,6 +50,7 @@
   }
 
   function toast(text){
+    if(window.innerWidth <= 767 && navigator.vibrate){ try{ navigator.vibrate(10); }catch(e){} }
     let wrap = document.querySelector('.toast-wrap');
     if(!wrap){
       wrap = document.createElement('div');
@@ -168,6 +169,8 @@
 
     root.innerHTML = list.map(cardHtml).join('');
     bindCardEvents(root);
+    const meta = document.querySelector('.catalog-meta');
+    if(meta){ meta.textContent = `Найдено ${list.length} товаров`; }
   }
 
   function cardHtml(p){

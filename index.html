@@ -2,10 +2,12 @@
 <html lang="ru">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <title>Galenite — Marketplace</title>
-  <meta name="description" content="Чистая база fashion marketplace: главная, каталог, карточка товара, профиль и AI-чат.">
+  <meta name="description" content="Белая минимальная база fashion marketplace: каталог сразу на главной, профиль, карточка товара и AI-чат.">
   <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/tablet-style.css">
+  <link rel="stylesheet" href="assets/css/mobile-style.css">
 </head>
 <body>
 <div class="site-shell">
@@ -31,54 +33,12 @@
   </div>
 </header>
 
-  <main>
-    <section class="hero">
-      <div class="container hero-grid">
-        <article class="hero-card">
-          <div>
-            <span class="hero-kicker">Marketplace / ready base</span>
-            <h1 class="hero-title">Чистый магазин без визуального мусора.</h1>
-            <p class="hero-copy">Сверху — только бренд. Ниже — сразу каталог, быстрые действия в карточках, отдельная страница товара, профиль с корзиной и отдельная вкладка AI-чата. Это уже база под реальный запуск, а не кривая демка.</p>
-            <div class="hero-actions">
-              <a class="primary-btn" href="#catalog">Открыть каталог</a>
-              <a class="ghost-btn" href="ai-chat.html">Открыть AI-чат</a>
-            </div>
-          </div>
-          <div class="hero-visual" aria-hidden="true"></div>
-        </article>
-        <div class="mini-stack">
-          <article class="mini-card">
-            <div>
-              <h2 class="mini-title">Карточки уже готовы</h2>
-              <p class="mini-copy">Есть кнопки избранного и корзины, статусы добавления, переход в отдельный товар и локальное сохранение состояния.</p>
-            </div>
-            <div class="link-row">
-              <a class="ghost-btn" href="profile.html">Профиль / корзина</a>
-            </div>
-          </article>
-          <article class="mini-card">
-            <div>
-              <h2 class="mini-title">AI-чат отдельно</h2>
-              <p class="mini-copy">По структуре близко к ChatGPT: история, сообщения, поле ввода, готово под подмену на реальный backend.</p>
-            </div>
-            <div class="link-row">
-              <a class="ghost-btn" href="ai-chat.html">Смотреть чат</a>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
+  <main class="page-main">
     <section class="section" id="catalog">
       <div class="container">
-        <div class="section-head">
-          <div>
-            <h2 class="section-title">Каталог</h2>
-            <div class="section-sub">Минималистичная сетка, быстрые действия прямо в карточке и чистая страница товара без перегруза.</div>
-          </div>
-        </div>
-
-        <div class="filter-bar">
+        <h1 class="page-title">Каталог</h1>
+        <p class="page-sub">Чистая главная без лишних блоков: сверху бренд, ниже сразу товары, быстрые действия в карточках и отдельная страница продукта.</p>
+        <div class="toolbar">
           <input class="field" type="search" placeholder="Поиск по названию, категории или цвету" data-search>
           <select class="select" data-category>
             <option value="all">Все категории</option>
@@ -96,54 +56,42 @@
             <option value="price-asc">Сначала дешевле</option>
             <option value="price-desc">Сначала дороже</option>
           </select>
-          <input class="field" type="text" placeholder="Теги через запятую: oversize, black" data-tags>
-          <a class="ghost-btn" href="profile.html">Перейти в профиль</a>
+          <input class="field" type="text" placeholder="Теги: oversize, black" data-tags>
         </div>
-
-        <div class="chips" style="margin:14px 0 18px">
-          <button class="chip active" type="button" data-quick-category="all">Все</button>
-          <button class="chip" type="button" data-quick-category="Топы">Топы</button>
-          <button class="chip" type="button" data-quick-category="Худи">Худи</button>
-          <button class="chip" type="button" data-quick-category="Брюки">Брюки</button>
-          <button class="chip" type="button" data-quick-category="Аксессуары">Аксессуары</button>
-          <button class="chip" type="button" data-quick-category="Обувь">Обувь</button>
+        <div class="quickbar">
+          <div class="chips">
+            <button class="chip active" type="button" data-quick-category="all">Все</button>
+            <button class="chip" type="button" data-quick-category="Топы">Топы</button>
+            <button class="chip" type="button" data-quick-category="Худи">Худи</button>
+            <button class="chip" type="button" data-quick-category="Брюки">Брюки</button>
+            <button class="chip" type="button" data-quick-category="Аксессуары">Аксессуары</button>
+            <button class="chip" type="button" data-quick-category="Обувь">Обувь</button>
+          </div>
+          <div class="catalog-meta">2 карточки в ряд на телефоне, 3 на планшете, 4 на десктопе.</div>
         </div>
-
-        <div class="catalog">
+        <div class="catalog-shell">
           <div class="product-grid" data-products></div>
         </div>
       </div>
     </section>
   </main>
-
   <footer class="footer" id="contacts">
     <div class="container">
       <div class="contact-wrap">
         <div>
           <h2 class="contact-title">Контакты</h2>
-          <p class="footer-copy">Низ сайта тоже уже готов как чистая база. Дальше сюда можно подкинуть реальные соцсети, адреса, форму связи, политику, реквизиты и всё остальное.</p>
+          <p class="footer-copy">Нижний блок уже готов под запуск. Дальше сюда просто подставишь реальные контакты, реквизиты, Telegram и всё остальное.</p>
         </div>
         <div class="contact-grid">
-          <div class="contact-item">
-            <div class="contact-label">Почта</div>
-            <div class="contact-value">hello@galenite.ru</div>
-          </div>
-          <div class="contact-item">
-            <div class="contact-label">Telegram</div>
-            <div class="contact-value">@galenite</div>
-          </div>
-          <div class="contact-item">
-            <div class="contact-label">Телефон</div>
-            <div class="contact-value">+7 (900) 000-00-00</div>
-          </div>
-          <div class="contact-item">
-            <div class="contact-label">График</div>
-            <div class="contact-value">Пн–Вс · 10:00–22:00</div>
-          </div>
+          <div class="contact-item"><div class="contact-label">Почта</div><div class="contact-value">hello@galenite.ru</div></div>
+          <div class="contact-item"><div class="contact-label">Telegram</div><div class="contact-value">@galenite</div></div>
+          <div class="contact-item"><div class="contact-label">Телефон</div><div class="contact-value">+7 (900) 000-00-00</div></div>
+          <div class="contact-item"><div class="contact-label">График</div><div class="contact-value">Пн–Вс · 10:00–22:00</div></div>
         </div>
       </div>
     </div>
   </footer>
+  <nav class="mobile-dock"><a class="dock-link active" href="index.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Главная</span></a><a class="dock-link " href="index.html#catalog"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Каталог</span></a><a class="dock-link " href="ai-chat.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 17 3 21v-4a7 7 0 1 1 4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>AI чат</span></a><a class="dock-link " href="profile.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Профиль</span></a></nav>
 </div>
 <script src="assets/js/data.js"></script>
 <script src="assets/js/app.js"></script>
