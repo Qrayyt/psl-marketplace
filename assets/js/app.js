@@ -480,9 +480,28 @@
     if(!form) return;
     const textarea = form.querySelector('[data-chat-input]');
     const historyButtons = document.querySelectorAll('[data-chat-preset]');
+    const menuBtn = document.querySelector('[data-chat-menu]');
+
+    function setChatMenuOpen(next){
+      document.body.classList.toggle('chat-menu-open', !!next);
+    }
+    menuBtn?.addEventListener('click', () => {
+      setChatMenuOpen(!document.body.classList.contains('chat-menu-open'));
+    });
+    document.addEventListener('keydown', e => {
+      if(e.key === 'Escape') setChatMenuOpen(false);
+    });
+    document.addEventListener('click', e => {
+      if(!document.body.classList.contains('chat-menu-open')) return;
+      const inSidebar = e.target.closest('.chat-sidebar');
+      const opener = e.target.closest('[data-chat-menu]');
+      if(!inSidebar && !opener){ setChatMenuOpen(false); }
+    });
+
     historyButtons.forEach(btn => btn.onclick = () => {
       textarea.value = btn.dataset.chatPreset;
       textarea.focus();
+      if(window.innerWidth <= 767){ setChatMenuOpen(false); }
     });
     textarea.addEventListener('input', () => {
       textarea.style.height = 'auto';
