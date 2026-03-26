@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Galenite — AI Chat</title>
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+<div class="site-shell">
+  
+<header class="topbar">
+  <div class="topbar-inner">
+    <nav class="nav-left">
+      <a class="nav-link " href="index.html">Главная</a>
+    </nav>
+    <a class="brand" href="index.html">Galenite</a>
+    <div class="nav-right">
+      <a class="icon-btn" href="profile.html" aria-label="Профиль и корзина">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="count-badge" data-cart-count>0</span>
+      </a>
+      <a class="icon-btn" href="profile.html" aria-label="Избранное">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12.1 20.3 4.9 13.3a4.8 4.8 0 1 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 0 1 6.8 6.8l-7 7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span class="count-badge" data-fav-count>0</span>
+      </a>
+      <a class="nav-link active" href="ai-chat.html">AI Chat</a>
+      <a class="nav-link " href="profile.html">Профиль</a>
+    </div>
+  </div>
+</header>
+
+  <main class="chat-page">
+    <div class="container" style="height:100%">
+      <section class="chat-shell">
+        <aside class="chat-sidebar">
+          <h2 class="sidebar-title">AI Chat</h2>
+          <button class="new-chat" type="button" data-new-chat>Новый чат</button>
+          <div class="chat-history">
+            <button type="button" data-chat-preset="Подбери белые вещи до 10000">Подбери белые вещи до 10000</button>
+            <button type="button" data-chat-preset="Собери минималистичный образ">Собери минималистичный образ</button>
+            <button type="button" data-chat-preset="Что ты умеешь?">Что ты умеешь?</button>
+          </div>
+        </aside>
+        <div class="chat-main">
+          <div class="chat-messages" data-chat-messages></div>
+          <form class="chat-composer" data-chat-form>
+            <div class="chat-box">
+              <textarea class="chat-textarea" data-chat-input placeholder="Напиши запрос: подобрать образ, найти категорию, уложиться в бюджет..." rows="1"></textarea>
+              <button class="chat-send" type="submit">Отправить</button>
+            </div>
+          </form>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
