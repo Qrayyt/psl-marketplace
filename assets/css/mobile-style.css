@@ -54,19 +54,19 @@
   .stats-grid{grid-template-columns:repeat(3,1fr)}
   .profile-product{grid-template-columns:86px minmax(0,1fr);gap:12px}
   .profile-actions{grid-column:1 / -1;justify-content:flex-start}
-  .chat-shell{min-height:auto;border-radius:20px;overflow:visible;border:0}
-  .chat-sidebar{position:fixed;top:0;bottom:0;left:0;width:min(82vw,300px);z-index:95;border-right:1px solid var(--line);padding:14px;border-radius:0;background:#fff;transform:translateX(-105%);transition:transform .24s ease;box-shadow:10px 0 30px rgba(17,17,17,.12)}
+  .chat-shell{min-height:auto;border-radius:16px;overflow:visible;border:0}
+  .chat-sidebar{position:fixed;top:0;bottom:0;left:0;width:min(84vw,312px);z-index:95;border-right:1px solid var(--line);padding:14px;border-radius:0;background:#fff;transform:translateX(-105%);transition:transform .24s ease;box-shadow:10px 0 30px rgba(17,17,17,.12)}
   .chat-menu-open .chat-sidebar{transform:translateX(0)}
   .chat-menu-open .site-shell::before{content:"";position:fixed;inset:0;background:rgba(17,17,17,.36);z-index:90}
-  .chat-main{min-height:70dvh;border:1px solid var(--line);border-radius:20px}
-  .chat-topbar{height:48px}
+  .chat-main{min-height:72dvh;border:1px solid var(--line);border-radius:16px}
+  .chat-topbar{height:46px}
   .chat-menu-btn{display:flex}
-  .chat-messages{padding:10px 10px 94px;gap:12px}
-  .bubble{font-size:14px;max-width:90%}
+  .chat-messages{padding:10px 10px 86px;gap:12px}
+  .bubble{font-size:14px;max-width:90%;padding:10px 12px}
   .plain-text{font-size:14px}
   .chat-composer{padding:8px 10px 10px}
-  .chat-box{padding:8px 8px 8px 12px;border-radius:20px;align-items:center}
-  .chat-textarea{min-height:44px;padding:8px 0}
+  .chat-box{padding:7px 7px 7px 11px;border-radius:18px;align-items:center}
+  .chat-textarea{min-height:42px;padding:8px 0}
   .chat-send{min-width:40px;width:40px;height:40px;border-radius:999px}
   .mobile-dock{position:fixed;left:10px;right:10px;bottom:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:8px;border:1px solid rgba(17,17,17,.08);background:rgba(255,255,255,.96);backdrop-filter:blur(16px);border-radius:22px;box-shadow:0 18px 40px rgba(17,17,17,.08);z-index:60}
   .dock-link{min-height:54px;border-radius:16px;display:grid;place-items:center;gap:4px;color:var(--muted);font-size:11px;font-weight:600;text-align:center;padding:4px 6px}
