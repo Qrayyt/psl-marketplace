@@ -33,7 +33,7 @@
     cart: load(LS_KEYS.cart, []),
     favs: load(LS_KEYS.favs, []),
     chat: load(LS_KEYS.chat, [
-      { role: 'assistant', text: 'Здравствуйте. Помогу подобрать материал под основание, нагрузку и условия эксплуатации.' }
+      { role: 'assistant', text: 'Напишите название материала или категорию для поиска по каталогу. Технический подбор выполняет специалист PSL.' }
     ])
   };
 
@@ -184,24 +184,25 @@
     if(sort === 'rating') list.sort((a,b)=>b.rating-a.rating);
     if(sort === 'new') list.sort((a,b)=>Number(b.tags.includes('new')) - Number(a.tags.includes('new')));
 
+    document.querySelectorAll('.catalog-meta,[data-mobile-meta]').forEach(meta => {
+      meta.textContent = state.products.length ? `Найдено материалов: ${list.length}` : '';
+    });
     if(!list.length){
-      root.innerHTML = '<div class="empty-state">По этим фильтрам пока ничего не найдено. Попробуй убрать часть тегов или сменить категорию.</div>';
+      root.innerHTML = state.products.length
+        ? '<div class="empty-state">По вашему запросу ничего не найдено. Попробуйте другое название или категорию.</div>'
+        : '<div class="catalog-unavailable"><p>Онлайн-каталог сейчас недоступен.<br>Актуальные материалы и документация доступны на сайтах брендов.</p><a href="#brands">Перейти к брендам ↗</a></div>';
       return;
     }
 
     root.innerHTML = list.map(cardHtml).join('');
     bindCardEvents(root);
-    document.querySelectorAll('.catalog-meta,[data-mobile-meta]').forEach(meta => {
-      meta.textContent = `Найдено ${list.length} товаров`;
-    });
   }
 
   function cardHtml(p){
     return `
       <article class="product-card">
-        <a class="card-link" href="product.html?id=${encodeURIComponent(p.id)}" aria-label="${escapeHtml(p.name)}">
           <div class="card-media">
-            <img src="${p.image}" alt="${escapeHtml(p.name)}" loading="lazy">
+            <a class="card-link" href="product.html?id=${encodeURIComponent(p.id)}" aria-label="${escapeHtml(p.name)}"><img src="${escapeHtml(p.image || p.imageUrl || '')}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async"></a>
             <div class="card-actions">
               <button class="card-fab ${inFavs(p.id) ? 'active' : ''}" type="button" data-fav="${p.id}" aria-label="В избранное">
                 ${iconHeart()}
@@ -211,7 +212,6 @@
               </button>
             </div>
           </div>
-        </a>
         <div class="card-body">
           <div class="card-topline">
             <div>
@@ -253,6 +253,10 @@
   }
 
   function initCatalogControls(){
+    const categorySelect = document.querySelector('[data-category]');
+    if(categorySelect){
+      categorySelect.innerHTML = '<option value="all">Все категории</option>' + [...new Set(state.products.map(p => p.category).filter(Boolean))].map(category => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
+    }
     const controls = document.querySelectorAll('[data-search],[data-category],[data-sort],[data-tags]');
     controls.forEach(el => el.addEventListener('input', renderProducts));
     controls.forEach(el => el.addEventListener('change', renderProducts));
@@ -294,15 +298,22 @@
     if(!root) return;
 
     const params = new URLSearchParams(location.search);
-    const id = params.get('id') || state.products[0]?.id;
-    const p = getProduct(id) || state.products[0];
-    if(!p) return;
+    const brand = window.PSL_BRANDS?.[params.get('brand')];
+    if(brand){
+      document.title = `${brand.name} — PSL`;
+      root.innerHTML = `<div class="brand-presentation"><div class="breadcrumbs"><a href="index.html">Главная</a><span>/</span><a href="index.html#brands">Бренды</a><span>/</span><span>${escapeHtml(brand.name)}</span></div><h1>${escapeHtml(brand.name)}</h1><div class="brand-presentation-grid"><img class="brand-presentation-image" src="${escapeHtml(brand.image)}" alt="${escapeHtml(brand.name)}"><section class="brand-presentation-copy"><span class="section-index">POLYMER SYSTEM LABS</span><h2>${escapeHtml(brand.caption)}</h2><p>${escapeHtml(brand.description)}</p><ul>${brand.details.map(detail => `<li>${escapeHtml(detail)}</li>`).join('')}</ul><a class="outline-link" href="${escapeHtml(brand.url)}" target="_blank" rel="noopener">Сайт бренда <span>↗</span></a></section></div></div>`;
+      return;
+    }
+    const id = params.get('id');
+    const p = getProduct(id);
+    if(!p){ root.innerHTML = '<div class="empty-state">Материал не найден или каталог временно недоступен. <a class="text-link" href="index.html#catalog">Вернуться к каталогу ↗</a></div>'; return; }
+    document.title = `${p.name} — PSL`;
 
     root.innerHTML = `
       <div class="product-layout">
         <section class="gallery-card">
           <div class="product-main-media">
-            <img src="${p.image}" alt="${escapeHtml(p.name)}">
+            <img src="${escapeHtml(p.image || p.imageUrl || '')}" alt="${escapeHtml(p.name)}">
           </div>
           <div class="product-thumbs">
             ${(p.imageUrls && p.imageUrls.length > 1 ? p.imageUrls : []).map((url, i) => `<div class="thumb${i===0?' active':''}"><img src="${url}" alt="${escapeHtml(p.name)}" data-gallery-idx="${i}"></div>`).join('')}
@@ -324,14 +335,14 @@
           <div class="option-block">
             <div class="option-label">Вариант / фасовка</div>
             <div class="size-row">
-              ${p.sizes.map((s,i) => `<button class="size-btn ${i===0?'active':''}" type="button" data-size="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join('')}
+              ${(p.sizes || []).map((s,i) => `<button class="size-btn ${i===0?'active':''}" type="button" data-size="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join('')}
             </div>
           </div>
 
           <div class="option-block">
             <div class="option-label">Характеристики</div>
             <ul class="detail-list">
-              ${p.details.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
+              ${(p.details || []).map(item => `<li>${escapeHtml(item)}</li>`).join('')}
             </ul>
           </div>
 
@@ -347,7 +358,7 @@
       </div>
     `;
 
-    let selectedSize = p.sizes[0] || null;
+    let selectedSize = (p.sizes || [])[0] || null;
     root.querySelectorAll('[data-size]').forEach(btn => {
       btn.addEventListener('click', () => {
         root.querySelectorAll('[data-size]').forEach(x => x.classList.remove('active'));
@@ -379,7 +390,9 @@
     });
     root.querySelector('[data-fav-product]')?.addEventListener('click', e => {
       toggleFav(p.id, null);
-      renderProductPage();
+      const button = e.currentTarget;
+      button.classList.toggle('active-ish', inFavs(p.id));
+      button.innerHTML = iconHeart() + (inFavs(p.id) ? ' Убрать из избранного' : ' В избранное');
     });
   }
 
@@ -543,7 +556,7 @@
       const text = textarea.value.trim();
       if(!text) return;
       state.chat.push({ role: 'user', text });
-      const answer = fakeAi(text);
+      const answer = catalogReply(text);
       state.chat.push({ role: 'assistant', text: answer });
       save(LS_KEYS.chat, state.chat);
       textarea.value = '';
@@ -558,7 +571,7 @@
     renderChat();
   }
 
-  function fakeAi(text){
+  function catalogReply(text){
     const q = text.toLowerCase();
     const hasBudget = q.match(/(\d{3,6})/);
     const budget = hasBudget ? parseInt(hasBudget[1],10) : null;
@@ -571,14 +584,14 @@
     picks = picks.slice(0,3);
 
     if(q.includes('фасов') || q.includes('расход')){
-      return 'Укажите площадь, тип основания и требуемую толщину слоя — рассчитаю ориентировочный расход и подходящую фасовку.';
+      return 'Расход и фасовку нужно уточнить по технологической карте конкретного материала. Документы доступны на polymer-system.ru/documents.';
     }
     if(q.includes('систем') || q.includes('подбери')){
       const names = picks.length ? picks.map(p => p.name).join(', ') : 'несколько подходящих материалов';
-      return `Для начала рассмотрите: ${names}. Для точного подбора понадобятся данные об основании, нагрузке и условиях эксплуатации.`;
+      return 'Для подбора системы обратитесь к техническому специалисту PSL через polymer-system.ru. Подготовьте данные об основании, нагрузке и условиях эксплуатации.';
     }
     if(q.includes('что ты умеешь')){
-      return 'Помогу сузить выбор материала, собрать систему слоёв и подготовить данные для консультации технического специалиста.';
+      return 'Это поиск по загруженному каталогу. Технические рекомендации и расчёты предоставляет специалист PSL.';
     }
     if(picks.length){
       return 'По вашему запросу подходят: ' + picks.map(p => `${p.name} — ${fmtPrice(p.price)}`).join('; ') + '.';

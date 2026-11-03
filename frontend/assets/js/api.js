@@ -16,14 +16,9 @@
   window.PSL_PRODUCTS_READY = fetch(API_BASE + '/api/products/all', { signal: AbortSignal.timeout(5000) })
     .then(function(r){ return r.json(); })
     .then(function(products){
-      var pslCategories = ['Защитные покрытия','Клеевые системы','Гидроизоляция','Промышленные полы'];
-      var isPslCatalog = Array.isArray(products) && products.some(function(product){
-        return pslCategories.indexOf(product.category) !== -1;
-      });
-      if(Array.isArray(products) && products.length > 0 && isPslCatalog){
-        window.PRODUCTS = products;
-      }else if(Array.isArray(products) && products.length > 0){
-        console.warn('[API] Получен устаревший демо-каталог, используется актуальный PSL fallback.');
+      if(Array.isArray(products)){
+        var oldDemoCategories = ['Топы','Худи','Брюки','Верхняя одежда','Аксессуары','Обувь'];
+        window.PRODUCTS = products.filter(function(product){ return oldDemoCategories.indexOf(product.category) === -1; });
       }
     })
     .catch(function(e){

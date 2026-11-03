@@ -3,151 +3,67 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>PSL — промышленные материалы</title>
-  <meta name="description" content="Каталог промышленных материалов Polymer System Labs.">
+  <meta name="description" content="Polymer System Labs. Промышленные полимерные материалы WIRON, FIXTILE, SILFLEX и DOLOTEX.">
+  <meta name="theme-color" content="#ffffff">
+  <title>PSL — Polymer System Labs</title>
+  <link rel="preload" as="image" href="assets/images/wiron.webp">
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/tablet-style.css">
   <link rel="stylesheet" href="assets/css/mobile-style.css">
   <link rel="stylesheet" href="assets/css/auth-ui.css">
+  <link rel="stylesheet" href="assets/css/psl.css">
+  <script defer src="assets/js/experience.js"></script>
 </head>
-<body class="intro-lock">
-<div class="psl-intro" data-intro aria-hidden="true">
-  <div class="psl-intro__logo" aria-label="PSL">
-    <span class="psl-intro__slash"></span>
-    <span>PSL</span>
-  </div>
-  <div class="psl-intro__line"></div>
-</div>
-<div class="site-shell">
+<body class="psl-home">
+  <a class="skip-link" href="#main">К содержимому</a>
+  <div class="opening" data-opening aria-hidden="true"><img src="assets/images/psl-logo.webp" width="160" height="62" alt="PSL"></div>
+  <header class="masthead">
+    <a class="psl-brand" href="index.html" aria-label="PSL — главная"><img src="assets/images/psl-logo.webp" width="80" height="31" alt="PSL"><span>POLYMER<br>SYSTEM LABS</span></a>
+    <nav aria-label="Основная навигация"><a class="current" href="#brands">Бренды</a><a href="#catalog">Каталог</a><a href="https://polymer-system.ru/documents" target="_blank" rel="noopener">Документация <span>↗</span></a></nav>
+    <div class="header-actions"><a href="profile.html" class="account-link">Личный кабинет <span>↗</span></a><button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Открыть меню"><span></span><span></span></button></div>
+  </header>
+  <nav class="mobile-menu" id="mobile-menu" aria-label="Мобильная навигация" hidden><a href="#brands">Бренды</a><a href="#catalog">Каталог</a><a href="https://polymer-system.ru/documents">Документация ↗</a><a href="profile.html">Личный кабинет</a></nav>
+  <main id="main">
+    <div class="intro-caption wrap"><span><i></i> ХИМИЯ, КОТОРАЯ РАБОТАЕТ</span><span>POLYMER SYSTEM LABS / МАТЕРИАЛЫ</span></div>
+    <section class="brand-stage wrap" aria-labelledby="wiron-heading">
+      <div class="stage-visual"><img class="wiron-pack" src="assets/images/wiron.webp" width="1000" height="944" fetchpriority="high" alt="WIRON — двухкомпонентный состав, канистры компонентов A и Б"></div>
+      <div class="stage-title"><span class="stage-label">ЗАЩИТА ПОВЕРХНОСТЕЙ / 01</span><h1 id="wiron-heading">WIRON<span>®</span></h1></div>
+      <div class="stage-panel">
+        <div class="stage-lead"><span class="red-slash" aria-hidden="true">/</span><h2>Промышленная защита<br>ваших инвестиций.</h2></div>
+        <p class="stage-description">Полимерный состав для защиты и упрочнения оснований, материалов и поверхностей.</p>
+        <ul class="benefit-list">
+          <li><span class="benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="m12 3 8 3v6c0 5-8 9-8 9s-8-4-8-9V6z"/></svg></span><span>Защита бетона<br><small>от воздействий и износа</small></span></li>
+          <li><span class="benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="m14 2-9 12h6l-1 8 9-12h-6z"/></svg></span><span>Промышленные полы<br><small>стойкость в эксплуатации</small></span></li>
+          <li><span class="benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="m3 8 9-5 9 5-9 5zM3 12l9 5 9-5M3 16l9 5 9-5"/></svg></span><span>Антикоррозионная защита</span></li>
+          <li><span class="benefit-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M12 2s-7 8-7 13a7 7 0 0 0 14 0c0-5-7-13-7-13Z"/></svg></span><span>Гидроизоляция</span></li>
+        </ul>
+        <div class="contour-pattern" aria-hidden="true"></div>
+      </div>
+      <div class="stage-note"><span>МАТЕРИАЛ.<br>СИСТЕМА.<br>РЕЗУЛЬТАТ.</span><i></i><small>POLYMER SYSTEM LABS</small></div>
+      <div class="stage-action"><a class="outline-link" href="product.html?brand=wiron">Подробнее о WIRON <span>↗</span></a><span class="stage-pagination">WIRON / PSL</span></div>
+    </section>
 
-<header class="topbar">
-  <div class="topbar-inner">
-    <nav class="nav-left">
-      <a class="nav-link active" href="index.html">Главная</a>
-      <a class="nav-link" href="#catalog">Каталог</a>
-    </nav>
-    <a class="brand" href="index.html"><span class="brand-slash"></span>PSL</a>
-    <div class="nav-right">
-      <a class="icon-btn" href="profile.html" aria-label="Профиль и корзина">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-        <span class="count-badge" data-cart-count>0</span>
-      </a>
-      <a class="icon-btn" href="profile.html" aria-label="Избранное">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12.1 20.3 4.9 13.3a4.8 4.8 0 1 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 0 1 6.8 6.8l-7 7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-        <span class="count-badge" data-fav-count>0</span>
-      </a>
-      <a class="nav-link " href="ai-chat.html">Подбор материала</a>
-      <a class="nav-link " href="profile.html" data-auth-btn>Профиль</a>
-    </div>
-  </div>
-</header>
-
-  <main class="page-main">
-    <section class="hero-section" aria-label="PSL Hero">
-      <div class="container">
-        <div class="hero-grid">
-          <div class="hero-main">
-            <div class="hero-topline">
-              <span>Polymer System Labs</span>
-              <span>Москва · 2026</span>
-            </div>
-            <div class="hero-copy">
-              <p class="hero-kicker"><span></span> Материалы для сложных задач</p>
-              <h1 class="hero-title">Промышленные<br>решения без<br><em>компромиссов.</em></h1>
-              <p class="hero-description">Покрытия, клеевые системы и материалы для защиты поверхностей — в одном техническом каталоге.</p>
-              <a class="hero-cta" href="#catalog">Открыть каталог <span>↘</span></a>
-            </div>
-            <div class="hero-geometry" aria-hidden="true"><span></span><span></span><span></span></div>
-          </div>
-          <aside class="hero-aside">
-            <div class="hero-index">01</div>
-            <div class="hero-aside-copy">
-              <span class="eyebrow">Системный подход</span>
-              <h2>От подбора до внедрения на объекте.</h2>
-              <p>Техническая документация, консультация специалистов и готовые системы материалов.</p>
-            </div>
-            <div class="hero-brand-tile"><span>PSL</span><small>Material systems</small></div>
-          </aside>
-        </div>
+    <section id="brands" class="brands-section wrap" aria-labelledby="brands-heading">
+      <div class="section-top"><span class="section-index">01 / БРЕНДЫ</span><span class="section-rule"></span></div>
+      <div class="section-intro"><h2 id="brands-heading">Свой материал.<br>Для каждой задачи.</h2><p>Четыре направления Polymer System Labs.<br>Откройте бренд, чтобы узнать о материалах<br>и их применении.</p></div>
+      <div class="brand-collection">
+        <a class="brand-entry" href="product.html?brand=wiron"><span class="entry-number">01</span><span class="entry-word wiron-word">WIRON</span><span class="entry-caption">Защитные покрытия</span><span class="entry-arrow">↗</span></a>
+        <a class="brand-entry" href="product.html?brand=fixtile"><span class="entry-number">02</span><img src="assets/images/matrix-logo.png" width="220" height="80" loading="lazy" alt="FIXTILE"><span class="entry-caption">Монтажные и клеевые системы</span><span class="entry-arrow">↗</span></a>
+        <a class="brand-entry" href="product.html?brand=silflex"><span class="entry-number">03</span><img src="assets/images/silflex-logo.png" width="220" height="80" loading="lazy" alt="SILFLEX"><span class="entry-caption">Материалы SILFLEX</span><span class="entry-arrow">↗</span></a>
+        <a class="brand-entry" href="product.html?brand=dolotex"><span class="entry-number">04</span><img src="assets/images/dolotex-logo.png" width="220" height="80" loading="lazy" alt="DOLOTEX"><span class="entry-caption">Материалы DOLOTEX</span><span class="entry-arrow">↗</span></a>
       </div>
     </section>
-    <section class="section" id="catalog">
-      <div class="container">
-        <div class="section-heading">
-          <div>
-            <span class="eyebrow">Каталог / 2026</span>
-            <h2 class="page-title">Материалы и системы</h2>
-          </div>
-          <p class="page-sub">Подберите решение по назначению, характеристикам и условиям эксплуатации.</p>
-        </div>
-        <div class="mobile-filters-bar">
-          <button class="mobile-filter-btn" type="button" data-open-filters>
-            <span>Фильтры</span>
-          </button>
-          <div class="catalog-meta mobile-meta" data-mobile-meta>Найдено 0 товаров</div>
-        </div>
-        <div class="catalog-filters-panel" data-filters-panel>
-          <div class="filters-panel-head">
-            <h3 class="filters-panel-title">Фильтры</h3>
-            <button class="filters-close" type="button" data-close-filters aria-label="Закрыть фильтры">✕</button>
-          </div>
-          <div class="toolbar">
-            <input class="field" type="search" placeholder="Поиск по названию, категории или свойствам" data-search>
-            <select class="select" data-category>
-              <option value="all">Все категории</option>
-              <option>Защитные покрытия</option>
-              <option>Клеевые системы</option>
-              <option>Гидроизоляция</option>
-              <option>Промышленные полы</option>
-            </select>
-            <select class="select" data-sort>
-              <option value="popular">Сначала популярные</option>
-              <option value="new">Сначала новые</option>
-              <option value="rating">По рейтингу</option>
-              <option value="price-asc">Сначала дешевле</option>
-              <option value="price-desc">Сначала дороже</option>
-            </select>
-            <input class="field" type="text" placeholder="Свойства: бетон, защита" data-tags>
-          </div>
-          <div class="quickbar">
-            <div class="chips">
-              <button class="chip active" type="button" data-quick-category="all">Все</button>
-              <button class="chip" type="button" data-quick-category="Защитные покрытия">Покрытия</button>
-              <button class="chip" type="button" data-quick-category="Клеевые системы">Клеевые системы</button>
-              <button class="chip" type="button" data-quick-category="Гидроизоляция">Гидроизоляция</button>
-              <button class="chip" type="button" data-quick-category="Промышленные полы">Полы</button>
-            </div>
-            <div class="catalog-meta">2 карточки в ряд на телефоне, 3 на планшете, 4 на десктопе.</div>
-          </div>
-        </div>
-        <div class="catalog-shell">
-          <div class="product-grid" data-products></div>
-        </div>
-      </div>
+
+    <section id="catalog" class="materials-section wrap" aria-labelledby="catalog-heading">
+      <div class="section-top"><span class="section-index">02 / КАТАЛОГ</span><span class="section-rule"></span></div>
+      <div class="section-intro"><h2 id="catalog-heading">Найти материал.</h2><a class="text-link" href="https://polymer-system.ru/documents" target="_blank" rel="noopener">Техническая документация <span>↗</span></a></div>
+      <div class="catalog-tools"><label class="search-label"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="m15 15 6 6"/></svg><input type="search" data-search placeholder="Название материала или назначение" aria-label="Поиск материалов"></label><select data-category aria-label="Категория"><option value="all">Все категории</option></select><select data-sort aria-label="Сортировка"><option value="popular">По умолчанию</option><option value="price-asc">Цена по возрастанию</option><option value="price-desc">Цена по убыванию</option></select></div>
+      <div class="catalog-count" data-mobile-meta aria-live="polite"></div><div class="product-grid" data-products></div>
     </section>
+
+    <section class="consult-section wrap" id="contacts"><div class="consult-panel"><span class="section-index">ТЕХНИЧЕСКАЯ ПОДДЕРЖКА</span><h2>Начнём<br>с вашей задачи.</h2><div class="consult-bottom"><p>Подбор материала начинается с основания,<br>условий работы и нужного результата.</p><a class="outline-link" href="https://polymer-system.ru/#contacts" target="_blank" rel="noopener">Связаться с PSL <span>↗</span></a></div><span class="consult-mark" aria-hidden="true">/</span></div></section>
   </main>
-  <footer class="footer" id="contacts">
-    <div class="container">
-      <div class="contact-wrap">
-        <div>
-          <span class="eyebrow">Polymer System Labs</span>
-          <h2 class="contact-title">Найдём решение<br>под вашу задачу.</h2>
-          <p class="footer-copy">Опишите объект и требования — технический специалист поможет подобрать систему материалов.</p>
-        </div>
-        <div class="contact-grid">
-          <a class="contact-item" href="https://polymer-system.ru"><div class="contact-label">Сайт компании</div><div class="contact-value">polymer-system.ru ↗</div></a>
-          <a class="contact-item" href="#catalog"><div class="contact-label">Продукция</div><div class="contact-value">Смотреть каталог ↗</div></a>
-          <div class="contact-item"><div class="contact-label">Формат работы</div><div class="contact-value">B2B · по всей России</div></div>
-          <div class="contact-item"><div class="contact-label">Поддержка</div><div class="contact-value">Техническая консультация</div></div>
-        </div>
-      </div>
-    </div>
-  </footer>
-  <nav class="mobile-dock"><a class="dock-link active" href="index.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Главная</span></a><a class="dock-link " href="index.html#catalog"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Каталог</span></a><a class="dock-link " href="ai-chat.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 17 3 21v-4a7 7 0 1 1 4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>AI чат</span></a><a class="dock-link " href="profile.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Профиль</span></a></nav>
-</div>
-<script src="assets/js/data.js"></script>
-<script src="assets/js/api.js"></script>
-<script src="assets/js/app.js"></script>
-<script src="assets/js/auth-ui.js"></script>
+  <footer class="psl-footer wrap"><a href="index.html"><img src="assets/images/psl-logo.webp" width="62" height="24" alt="PSL"></a><span>Polymer System Labs</span><a href="privacy.html">Политика конфиденциальности</a><span>© <span data-year>2026</span> PSL</span></footer>
+  <script defer src="assets/js/data.js"></script><script defer src="assets/js/api.js"></script><script defer src="assets/js/app.js"></script><script defer src="assets/js/auth-ui.js"></script>
 </body>
 </html>
