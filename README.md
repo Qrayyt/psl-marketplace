@@ -1,6 +1,6 @@
-# PSL Marketplace (Galenite)
+# PSL Marketplace
 
-Интернет-магазин одежды бренда Galenite.
+Каталог промышленных материалов Polymer System Labs.
 
 ## Запуск
 

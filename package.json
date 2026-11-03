@@ -1,7 +1,7 @@
 {
   "name": "psl-marketplace",
   "version": "1.0.0",
-  "description": "Интернет-магазин одежды бренда Galenite.",
+  "description": "Каталог промышленных материалов Polymer System Labs.",
   "main": "index.js",
   "directories": {
     "doc": "doc"

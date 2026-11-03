@@ -86,3 +86,32 @@
   .stats-grid{grid-template-columns:1fr 1fr}
   .profile-product{grid-template-columns:72px minmax(0,1fr)}
 }
+
+@media (max-width:767px){
+  :root{--container:calc(100vw - 20px)}
+  .psl-intro__logo{gap:12px}
+  .topbar-inner{min-height:62px}.brand{font-size:21px}.brand-slash{height:21px}
+  .page-main{padding-bottom:56px}
+  .hero-section{padding:10px 0 26px}
+  .hero-grid{grid-template-columns:1fr;min-height:auto;gap:7px}
+  .hero-main{min-height:590px;padding:20px;border-radius:23px}
+  .hero-topline{font-size:9px;letter-spacing:.11em}
+  .hero-copy{padding:74px 0 22px}
+  .hero-kicker{font-size:9px;margin-bottom:18px}
+  .hero-title{font-size:clamp(45px,13vw,62px);line-height:.91}
+  .hero-description{font-size:14px;max-width:32ch;margin-top:22px}
+  .hero-cta{min-height:50px;margin-top:28px;gap:32px}
+  .hero-geometry{width:84vw;right:-36%;bottom:-5%}
+  .hero-aside{min-height:340px;border-radius:23px;padding:20px}
+  .hero-aside-copy{padding:34px 0}.hero-aside-copy h2{font-size:36px}.hero-aside-copy p{font-size:14px}
+  .hero-brand-tile{min-height:104px;border-radius:17px;padding:18px}.hero-brand-tile span{font-size:50px}
+  .section{padding-top:34px}
+  .section-heading{align-items:flex-start;display:block;padding-bottom:20px}
+  .page-title{font-size:42px}.page-sub{margin-top:14px}
+  .catalog-shell{padding:0}
+  .product-grid{gap:7px}
+  .product-card{border-radius:16px}.card-body{padding:11px}.card-name{font-size:14px}.card-meta{text-transform:none;letter-spacing:0}
+  .pill{border-radius:5px}.add-btn{border-radius:8px}.card-fab{border-radius:8px}
+  .contact-wrap{border-radius:23px;padding:26px 20px}.contact-title{font-size:43px}.contact-grid{grid-template-columns:1fr}
+  .product-layout{grid-template-columns:1fr}.gallery-card,.detail-card{border-radius:23px}.product-title{font-size:44px}
+}

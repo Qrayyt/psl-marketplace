@@ -1,7 +1,7 @@
 {
   "name": "psl-marketplace-backend",
   "version": "1.0.0",
-  "description": "PSL Marketplace (Galenite) — backend API",
+  "description": "PSL Marketplace — backend API",
   "main": "dist/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",

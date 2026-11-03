@@ -1,5 +1,27 @@
 
 (function(){
+  function initIntro(){
+    const intro = document.querySelector('[data-intro]');
+    if(!intro){
+      document.body.classList.remove('intro-lock');
+      return;
+    }
+    let seen = false;
+    try{ seen = sessionStorage.getItem('psl_intro_seen') === '1'; }catch(e){}
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const delay = seen || reducedMotion ? 80 : 1650;
+    if(!seen){
+      try{ sessionStorage.setItem('psl_intro_seen','1'); }catch(e){}
+    }
+    window.setTimeout(() => {
+      intro.classList.add('is-hidden');
+      document.body.classList.remove('intro-lock');
+      window.setTimeout(() => intro.remove(), 650);
+    }, delay);
+  }
+
+  initIntro();
+
   const LS_KEYS = {
     cart: 'marketplace_cart_v2',
     favs: 'marketplace_favs_v2',
@@ -11,7 +33,7 @@
     cart: load(LS_KEYS.cart, []),
     favs: load(LS_KEYS.favs, []),
     chat: load(LS_KEYS.chat, [
-      { role: 'assistant', text: 'Привет. Я AI-консультант магазина. Могу помочь выбрать размер, собрать образ или быстро найти вещи по стилю.' }
+      { role: 'assistant', text: 'Здравствуйте. Помогу подобрать материал под основание, нагрузку и условия эксплуатации.' }
     ])
   };
 
@@ -25,7 +47,7 @@
     localStorage.setItem(key, JSON.stringify(value));
   }
   function fmtPrice(v){
-    return new Intl.NumberFormat('ru-RU').format(v) + ' ₽';
+    return Number(v) > 0 ? new Intl.NumberFormat('ru-RU').format(v) + ' ₽' : 'По запросу';
   }
   function getProduct(id){
     return state.products.find(p => p.id === id);
@@ -196,7 +218,7 @@
               <h3 class="card-name"><a href="product.html?id=${encodeURIComponent(p.id)}">${escapeHtml(p.name)}</a></h3>
               <div class="card-meta">${escapeHtml(p.category)} · ${escapeHtml(p.color)}</div>
             </div>
-            <div class="card-meta">★ ${p.rating}</div>
+            <div class="card-meta">${p.rating ? `★ ${p.rating}` : 'Тех. решение'}</div>
           </div>
           <div class="price-row">
             <div class="price">${fmtPrice(p.price)}</div>
@@ -295,19 +317,19 @@
             <span>${escapeHtml(p.name)}</span>
           </div>
           <h1 class="product-title">${escapeHtml(p.name)}</h1>
-          <div class="rating-row">★ ${p.rating} · ${p.reviews} отзывов · ${escapeHtml(p.color)}</div>
+          <div class="rating-row">${p.rating ? `★ ${p.rating} · ${p.reviews || 0} отзывов · ` : ''}${escapeHtml(p.color)}</div>
           <div class="product-price">${fmtPrice(p.price)} ${p.oldPrice ? `<span class="old-price" style="font-size:18px;margin-left:8px">${fmtPrice(p.oldPrice)}</span>` : ''}</div>
           <p class="product-copy">${escapeHtml(p.description)}</p>
 
           <div class="option-block">
-            <div class="option-label">Размер</div>
+            <div class="option-label">Вариант / фасовка</div>
             <div class="size-row">
               ${p.sizes.map((s,i) => `<button class="size-btn ${i===0?'active':''}" type="button" data-size="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join('')}
             </div>
           </div>
 
           <div class="option-block">
-            <div class="option-label">Что внутри</div>
+            <div class="option-label">Характеристики</div>
             <ul class="detail-list">
               ${p.details.map(item => `<li>${escapeHtml(item)}</li>`).join('')}
             </ul>
@@ -315,7 +337,7 @@
 
           <div class="action-row">
             <button class="primary-btn" type="button" data-buy-product="${p.id}">
-              ${iconCart()} Добавить в корзину
+              ${iconCart()} Добавить в заявку
             </button>
             <button class="ghost-btn ${inFavs(p.id) ? 'active-ish' : ''}" type="button" data-fav-product="${p.id}">
               ${iconHeart()} ${inFavs(p.id) ? 'Убрать из избранного' : 'В избранное'}
@@ -529,7 +551,7 @@
       renderChat();
     });
     document.querySelector('[data-new-chat]')?.addEventListener('click', () => {
-      state.chat = [{ role: 'assistant', text: 'Новый чат открыт. Напиши, что хочешь найти: размер, категорию, стиль или бюджет.' }];
+      state.chat = [{ role: 'assistant', text: 'Новый подбор открыт. Опишите основание, нагрузку и условия эксплуатации.' }];
       save(LS_KEYS.chat, state.chat);
       renderChat();
     });
@@ -541,29 +563,27 @@
     const hasBudget = q.match(/(\d{3,6})/);
     const budget = hasBudget ? parseInt(hasBudget[1],10) : null;
     let picks = [...state.products];
-    if(q.includes('худи')) picks = picks.filter(p => p.category === 'Худи');
-    if(q.includes('брюк')) picks = picks.filter(p => p.category === 'Брюки');
-    if(q.includes('обув')) picks = picks.filter(p => p.category === 'Обувь');
-    if(q.includes('аксесс')) picks = picks.filter(p => p.category === 'Аксессуары');
-    if(q.includes('бел')) picks = picks.filter(p => p.color.toLowerCase().includes('бел'));
-    if(q.includes('чер')) picks = picks.filter(p => p.color.toLowerCase().includes('чер'));
+    if(q.includes('бетон')) picks = picks.filter(p => `${p.name} ${p.description} ${(p.tags || []).join(' ')}`.toLowerCase().includes('бетон'));
+    if(q.includes('гидроизоляц')) picks = picks.filter(p => p.category === 'Гидроизоляция');
+    if(q.includes('пол')) picks = picks.filter(p => p.category === 'Промышленные полы');
+    if(q.includes('кле')) picks = picks.filter(p => p.category === 'Клеевые системы');
     if(budget) picks = picks.filter(p => p.price <= budget);
     picks = picks.slice(0,3);
 
-    if(q.includes('размер')){
-      return 'Для размерной логики здесь уже готова база интерфейса. Дальше можно подключить таблицы размеров по брендам и подсказывать fit на основе параметров пользователя.';
+    if(q.includes('фасов') || q.includes('расход')){
+      return 'Укажите площадь, тип основания и требуемую толщину слоя — рассчитаю ориентировочный расход и подходящую фасовку.';
     }
-    if(q.includes('образ') || q.includes('лук') || q.includes('собери')){
-      const names = picks.length ? picks.map(p => p.name).join(', ') : 'несколько базовых позиций';
-      return `Я бы собрал чистый монохромный образ так: ${names}. Дальше можно добавить автоматические подборки и связки товаров из каталога.`;
+    if(q.includes('систем') || q.includes('подбери')){
+      const names = picks.length ? picks.map(p => p.name).join(', ') : 'несколько подходящих материалов';
+      return `Для начала рассмотрите: ${names}. Для точного подбора понадобятся данные об основании, нагрузке и условиях эксплуатации.`;
     }
     if(q.includes('что ты умеешь')){
-      return 'Сейчас я демо-консультант. Уже умею вести диалог, сохранять историю локально и могу быть заменён на реальный AI endpoint почти без переделки интерфейса.';
+      return 'Помогу сузить выбор материала, собрать систему слоёв и подготовить данные для консультации технического специалиста.';
     }
     if(picks.length){
-      return 'Вот что подходит по запросу: ' + picks.map(p => `${p.name} — ${fmtPrice(p.price)}`).join('; ') + '.';
+      return 'По вашему запросу подходят: ' + picks.map(p => `${p.name} — ${fmtPrice(p.price)}`).join('; ') + '.';
     }
-    return 'Под такой запрос в демо-каталоге ничего не нашлось. Но UI уже готов — можно подключать реальную базу товаров и AI-поиск.';
+    return 'По этому запросу точного совпадения не найдено. Уточните тип основания, нагрузку, среду и желаемый результат.';
   }
 
   function escapeHtml(str){

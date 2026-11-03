@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>Galenite — AI Chat</title>
+  <title>PSL — подбор материала</title>
   <link rel="stylesheet" href="assets/css/styles.css">
   <link rel="stylesheet" href="assets/css/tablet-style.css">
   <link rel="stylesheet" href="assets/css/mobile-style.css">
@@ -11,13 +11,13 @@
 </head>
 <body>
 <div class="site-shell">
-  
+
 <header class="topbar">
   <div class="topbar-inner">
     <nav class="nav-left">
       <a class="nav-link " href="index.html">Главная</a>
     </nav>
-    <a class="brand" href="index.html">Galenite</a>
+    <a class="brand" href="index.html"><span class="brand-slash"></span>PSL</a>
     <div class="nav-right">
       <a class="icon-btn" href="profile.html" aria-label="Профиль и корзина">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -27,7 +27,7 @@
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12.1 20.3 4.9 13.3a4.8 4.8 0 1 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 0 1 6.8 6.8l-7 7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
         <span class="count-badge" data-fav-count>0</span>
       </a>
-      <a class="nav-link active" href="ai-chat.html">AI Chat</a>
+      <a class="nav-link active" href="ai-chat.html">Подбор материала</a>
       <a class="nav-link " href="profile.html" data-auth-btn>Профиль</a>
     </div>
   </div>
@@ -37,11 +37,11 @@
     <div class="container" style="height:100%">
       <section class="chat-shell">
         <aside class="chat-sidebar">
-          <h2 class="sidebar-title">Guardex</h2>
+          <h2 class="sidebar-title">PSL Подбор</h2>
           <button class="new-chat" type="button" data-new-chat>+ Новый чат</button>
           <div class="chat-history">
-            <button type="button" data-chat-preset="Подбери белые вещи до 10000">Подбери белые вещи до 10000</button>
-            <button type="button" data-chat-preset="Собери минималистичный образ">Собери минималистичный образ</button>
+            <button type="button" data-chat-preset="Нужно защитное покрытие для бетона">Покрытие для бетона</button>
+            <button type="button" data-chat-preset="Подбери систему для промышленного пола">Система для промышленного пола</button>
             <button type="button" data-chat-preset="Что ты умеешь?">Что ты умеешь?</button>
           </div>
         </aside>
@@ -50,7 +50,7 @@
             <button class="chat-menu-btn" type="button" data-chat-menu aria-label="Открыть чаты">
               <span></span><span></span><span></span>
             </button>
-            <div class="chat-model">Guardex</div>
+            <div class="chat-model">PSL · технический подбор</div>
           </div>
           <div class="chat-messages" data-chat-messages></div>
           <form class="chat-composer" data-chat-form>

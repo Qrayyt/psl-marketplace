@@ -39,7 +39,7 @@ export function welcomeEmail(name: string): { subject: string; html: string } {
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h2>Добро пожаловать, ${name}!</h2>
-        <p>Спасибо за регистрацию в PSL Marketplace (Galenite).</p>
+        <p>Спасибо за регистрацию в PSL Marketplace.</p>
         <p>Теперь вы можете добавлять товары в избранное, оформлять заказы и отслеживать их статус.</p>
         <br>
         <p>С уважением,<br>Команда PSL Marketplace</p>

@@ -203,7 +203,7 @@
           '<div class="form-group"><label>Старая цена</label><input name="oldPrice" type="number" min="0" value="0"></div>' +
         '</div>' +
         '<div class="form-row">' +
-          '<div class="form-group"><label>Категория</label><select name="category"><option>Топы</option><option>Худи</option><option>Брюки</option><option>Верхняя одежда</option><option>Аксессуары</option><option>Обувь</option></select></div>' +
+          '<div class="form-group"><label>Категория</label><select name="category"><option>Защитные покрытия</option><option>Клеевые системы</option><option>Гидроизоляция</option><option>Промышленные полы</option></select></div>' +
           '<div class="form-group"><label>Цвет</label><input name="color" placeholder="Черный"></div>' +
         '</div>' +
         '<div class="form-group"><label>Теги (через запятую)</label><input name="tags" placeholder="oversize, cotton"></div>' +

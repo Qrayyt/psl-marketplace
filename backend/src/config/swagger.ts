@@ -6,7 +6,7 @@ const options: swaggerJsdoc.Options = {
     info: {
       title: 'PSL Marketplace API',
       version: '1.0.0',
-      description: 'API интернет-магазина одежды Galenite',
+      description: 'API каталога промышленных материалов PSL',
     },
     servers: [
       { url: '/api', description: 'API' },

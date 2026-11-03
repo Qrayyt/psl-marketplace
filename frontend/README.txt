@@ -1,4 +1,4 @@
-# Galenite Marketplace — responsive ready base
+# PSL Marketplace — responsive ready base
 
 ## Структура
 - index.html — главная: бренд, каталог, контакты
