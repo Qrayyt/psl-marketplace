@@ -1,0 +1,249 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum OrderStatus {
+  NEW
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
+enum ExchangeDirection {
+  OUTGOING
+  INCOMING
+}
+
+enum ExchangeStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id            String   @id @default(uuid())
+  email         String   @unique
+  passwordHash  String   @map("password_hash")
+  name          String
+  phone         String?
+  role          Role     @default(USER)
+  isBlocked     Boolean  @default(false) @map("is_blocked")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  cartItems     CartItem[]
+  favorites     Favorite[]
+  orders        Order[]
+  addresses     DeliveryAddress[]
+  auditLogs     AuditLog[]
+
+  @@map("users")
+}
+
+model Product {
+  id           String   @id @default(uuid())
+  name         String
+  price        Float
+  oldPrice     Float?   @map("old_price")
+  category     String
+  tags         String[] @default([])
+  sizes        String[] @default([])
+  rating       Float    @default(0)
+  reviewsCount Int      @default(0) @map("reviews_count")
+  color        String?
+  description  String?
+  details      String[] @default([])
+  accent       String?
+  imageUrl     String?  @map("image_url")
+  imageUrls    String[] @default([]) @map("image_urls")
+  sku          String?  @map("sku")
+  stock        Int      @default(0) @map("stock")
+  externalId   String?  @unique @map("external_id")
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  cartItems    CartItem[]
+  favorites    Favorite[]
+  orderItems   OrderItem[]
+
+  @@index([externalId])
+  @@map("products")
+}
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  size      String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId, size])
+  @@map("cart_items")
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@map("favorites")
+}
+
+model Order {
+  id                String      @id @default(uuid())
+  userId            String      @map("user_id")
+  orderNumber       String      @unique @map("order_number")
+  status            OrderStatus @default(NEW)
+  deliveryAddressId String?     @map("delivery_address_id")
+  deliveryMethod    String?     @map("delivery_method")
+  total             Float       @default(0)
+  discountTotal     Float       @default(0) @map("discount_total")
+  promoCode         String?     @map("promo_code")
+  externalId        String?     @unique @map("external_id")
+  syncedAt          DateTime?   @map("synced_at")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  user              User             @relation(fields: [userId], references: [id])
+  deliveryAddress   DeliveryAddress? @relation(fields: [deliveryAddressId], references: [id])
+  items             OrderItem[]
+
+  @@index([syncedAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String @id @default(uuid())
+  orderId        String @map("order_id")
+  productId      String @map("product_id")
+  size           String
+  quantity       Int
+  price          Float
+  discountAmount Float  @default(0) @map("discount_amount")
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model DeliveryAddress {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  address    String
+  city       String
+  postalCode String?  @map("postal_code")
+  isDefault  Boolean  @default(false) @map("is_default")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@map("delivery_addresses")
+}
+
+model DiscountRule {
+  id           String       @id @default(uuid())
+  name         String
+  type         DiscountType
+  value        Float
+  targetTags   String[]     @default([]) @map("target_tags")
+  targetUserIds String[]    @default([]) @map("target_user_ids")
+  promoCode    String?      @unique @map("promo_code")
+  priority     Int          @default(0)
+  isStackable  Boolean      @default(false) @map("is_stackable")
+  isActive     Boolean      @default(true) @map("is_active")
+  validFrom    DateTime?    @map("valid_from")
+  validUntil   DateTime?    @map("valid_until")
+  createdAt    DateTime     @default(now()) @map("created_at")
+
+  @@map("discount_rules")
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  userId      String?  @map("user_id")
+  action      String
+  entityType  String   @map("entity_type")
+  entityId    String?  @map("entity_id")
+  details     Json?
+  ip          String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([entityType, entityId])
+  @@map("audit_log")
+}
+
+model ExchangeLog {
+  id          String            @id @default(uuid())
+  direction   ExchangeDirection
+  entityType  String            @map("entity_type")
+  entityId    String?           @map("entity_id")
+  status      ExchangeStatus    @default(PENDING)
+  request     Json?
+  response    Json?
+  error       String?
+  createdAt   DateTime          @default(now()) @map("created_at")
+
+  @@index([createdAt])
+  @@map("exchange_log")
+}
+
+// Учётка для подключения 1С к нашему обменному endpoint
+model OnecUser {
+  id           String   @id @default(uuid())
+  login        String   @unique
+  passwordHash String   @map("password_hash")
+  isActive     Boolean  @default(true) @map("is_active")
+  note         String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  lastSeenAt   DateTime? @map("last_seen_at")
+
+  sessions     OnecSession[]
+
+  @@map("onec_users")
+}
+
+// Сессия обмена: cookie-токен, который 1С посылает после checkauth
+model OnecSession {
+  id         String   @id @default(uuid())
+  userId     String   @map("user_id")
+  cookie     String   @unique
+  tempDir    String   @map("temp_dir")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  user OnecUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@map("onec_sessions")
+}

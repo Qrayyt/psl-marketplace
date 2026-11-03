@@ -1,0 +1,19 @@
+{
+  "name": "psl-marketplace",
+  "version": "1.0.0",
+  "description": "Интернет-магазин одежды бренда Galenite.",
+  "main": "index.js",
+  "directories": {
+    "doc": "doc"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "playwright": "^1.59.1"
+  }
+}

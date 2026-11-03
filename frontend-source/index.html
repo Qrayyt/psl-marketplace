@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Galenite — Marketplace</title>
+  <meta name="description" content="Белая минимальная база fashion marketplace: каталог сразу на главной, профиль, карточка товара и AI-чат.">
+  <link rel="stylesheet" href="assets/css/styles.css">
+  <link rel="stylesheet" href="assets/css/tablet-style.css">
+  <link rel="stylesheet" href="assets/css/mobile-style.css">
+</head>
+<body>
+<div class="site-shell">
+  
+<header class="topbar">
+  <div class="topbar-inner">
+    <nav class="nav-left">
+      <a class="nav-link active" href="index.html">Главная</a>
+    </nav>
+    <a class="brand" href="index.html">Galenite</a>
+    <div class="nav-right">
+      <a class="icon-btn" href="profile.html" aria-label="Профиль и корзина">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <span class="count-badge" data-cart-count>0</span>
+      </a>
+      <a class="icon-btn" href="profile.html" aria-label="Избранное">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12.1 20.3 4.9 13.3a4.8 4.8 0 1 1 6.8-6.8l.3.3.3-.3a4.8 4.8 0 0 1 6.8 6.8l-7 7Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        <span class="count-badge" data-fav-count>0</span>
+      </a>
+      <a class="nav-link " href="ai-chat.html">AI Chat</a>
+      <a class="nav-link " href="profile.html">Профиль</a>
+    </div>
+  </div>
+</header>
+
+  <main class="page-main">
+    <section class="hero-section" aria-label="PSL Hero">
+      <div class="container">
+        <div class="hero-banner">
+          <div class="hero-overlay">
+            <p class="hero-kicker">PSL Marketplace</p>
+            <h1 class="hero-title">PSL</h1>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="section" id="catalog">
+      <div class="container">
+        <h2 class="page-title">Каталог</h2>
+        <p class="page-sub">Чистая главная без лишних блоков: сверху бренд, ниже сразу товары, быстрые действия в карточках и отдельная страница продукта.</p>
+        <div class="mobile-filters-bar">
+          <button class="mobile-filter-btn" type="button" data-open-filters>
+            <span>Фильтры</span>
+          </button>
+          <div class="catalog-meta mobile-meta" data-mobile-meta>Найдено 0 товаров</div>
+        </div>
+        <div class="catalog-filters-panel" data-filters-panel>
+          <div class="filters-panel-head">
+            <h3 class="filters-panel-title">Фильтры</h3>
+            <button class="filters-close" type="button" data-close-filters aria-label="Закрыть фильтры">✕</button>
+          </div>
+          <div class="toolbar">
+            <input class="field" type="search" placeholder="Поиск по названию, категории или цвету" data-search>
+            <select class="select" data-category>
+              <option value="all">Все категории</option>
+              <option>Топы</option>
+              <option>Худи</option>
+              <option>Брюки</option>
+              <option>Верхняя одежда</option>
+              <option>Аксессуары</option>
+              <option>Обувь</option>
+            </select>
+            <select class="select" data-sort>
+              <option value="popular">Сначала популярные</option>
+              <option value="new">Сначала новые</option>
+              <option value="rating">По рейтингу</option>
+              <option value="price-asc">Сначала дешевле</option>
+              <option value="price-desc">Сначала дороже</option>
+            </select>
+            <input class="field" type="text" placeholder="Теги: oversize, black" data-tags>
+          </div>
+          <div class="quickbar">
+            <div class="chips">
+              <button class="chip active" type="button" data-quick-category="all">Все</button>
+              <button class="chip" type="button" data-quick-category="Топы">Топы</button>
+              <button class="chip" type="button" data-quick-category="Худи">Худи</button>
+              <button class="chip" type="button" data-quick-category="Брюки">Брюки</button>
+              <button class="chip" type="button" data-quick-category="Аксессуары">Аксессуары</button>
+              <button class="chip" type="button" data-quick-category="Обувь">Обувь</button>
+            </div>
+            <div class="catalog-meta">2 карточки в ряд на телефоне, 3 на планшете, 4 на десктопе.</div>
+          </div>
+        </div>
+        <div class="catalog-shell">
+          <div class="product-grid" data-products></div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <footer class="footer" id="contacts">
+    <div class="container">
+      <div class="contact-wrap">
+        <div>
+          <h2 class="contact-title">Контакты</h2>
+          <p class="footer-copy">Нижний блок уже готов под запуск. Дальше сюда просто подставишь реальные контакты, реквизиты, Telegram и всё остальное.</p>
+        </div>
+        <div class="contact-grid">
+          <div class="contact-item"><div class="contact-label">Почта</div><div class="contact-value">hello@galenite.ru</div></div>
+          <div class="contact-item"><div class="contact-label">Telegram</div><div class="contact-value">@galenite</div></div>
+          <div class="contact-item"><div class="contact-label">Телефон</div><div class="contact-value">+7 (900) 000-00-00</div></div>
+          <div class="contact-item"><div class="contact-label">График</div><div class="contact-value">Пн–Вс · 10:00–22:00</div></div>
+        </div>
+      </div>
+    </div>
+  </footer>
+  <nav class="mobile-dock"><a class="dock-link active" href="index.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>Главная</span></a><a class="dock-link " href="index.html#catalog"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Каталог</span></a><a class="dock-link " href="ai-chat.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M7 17 3 21v-4a7 7 0 1 1 4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg><span>AI чат</span></a><a class="dock-link " href="profile.html"><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm-7 8a7 7 0 0 1 14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><span>Профиль</span></a></nav>
+</div>
+<script src="assets/js/data.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
