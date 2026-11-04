@@ -95,12 +95,12 @@
     if(idx > -1){
       state.favs.splice(idx, 1);
       save(LS_KEYS.favs, state.favs);
-      if(btn) btn.classList.remove('active');
+      if(btn){btn.classList.remove('active');btn.setAttribute('aria-pressed','false');btn.setAttribute('aria-label','В избранное: '+getProduct(id).name);}
       toast('Убрано из избранного');
     }else{
       state.favs.unshift(id);
       save(LS_KEYS.favs, state.favs);
-      if(btn) btn.classList.add('active');
+      if(btn){btn.classList.add('active');btn.setAttribute('aria-pressed','true');btn.setAttribute('aria-label','Убрать из избранного: '+getProduct(id).name);}
       toast('Добавлено в избранное');
     }
     syncCounters();
@@ -120,12 +120,12 @@
       btn.innerHTML = iconCheck() + '<span>Добавлено</span>';
       setTimeout(() => {
         btn.classList.remove('added');
-        btn.innerHTML = iconCart() + '<span>В корзину</span>';
+        btn.innerHTML = iconQuote() + '<span>В заявке</span>';
       }, 1200);
     }
     syncCounters();
     renderProfile();
-    toast('Товар добавлен в корзину');
+    toast('Материал добавлен в заявку');
   }
 
   function updateCartQty(id, delta){
@@ -158,84 +158,69 @@
     toast('Товар удалён из корзины');
   }
 
+  let catalogBrand = 'all';
+  function brandOf(p){
+    return p.brand || ['WIRON','FIXTILE','SILFLEX','DOLOTEX'].find(b => p.name.toUpperCase().includes(b)) || (p.name.toUpperCase().includes('MATRIX') ? 'FIXTILE' : 'PSL');
+  }
   function renderProducts(){
     const root = document.querySelector('[data-products]');
     if(!root) return;
-
     const q = (document.querySelector('[data-search]')?.value || '').trim().toLowerCase();
     const category = document.querySelector('[data-category]')?.value || 'all';
     const sort = document.querySelector('[data-sort]')?.value || 'popular';
-    const tagString = (document.querySelector('[data-tags]')?.value || '').trim().toLowerCase();
-    const tags = tagString ? tagString.split(',').map(s => s.trim()).filter(Boolean) : [];
-    let list = [...state.products];
-
-    if(q){
-      list = list.filter(p => [p.name, p.category, p.color, ...(p.tags || [])].join(' ').toLowerCase().includes(q));
-    }
-    if(category !== 'all'){
-      list = list.filter(p => p.category === category);
-    }
-    if(tags.length){
-      list = list.filter(p => tags.every(tag => p.tags.some(t => t.toLowerCase().includes(tag))));
-    }
-
-    if(sort === 'price-asc') list.sort((a,b)=>a.price-b.price);
-    if(sort === 'price-desc') list.sort((a,b)=>b.price-a.price);
-    if(sort === 'rating') list.sort((a,b)=>b.rating-a.rating);
-    if(sort === 'new') list.sort((a,b)=>Number(b.tags.includes('new')) - Number(a.tags.includes('new')));
-
-    document.querySelectorAll('.catalog-meta,[data-mobile-meta]').forEach(meta => {
-      meta.textContent = state.products.length ? `Найдено материалов: ${list.length}` : '';
+    const tags = (document.querySelector('[data-tags]')?.value || '').toLowerCase().split(',').map(t=>t.trim()).filter(Boolean);
+    let list = state.products.filter(p => {
+      const text = [p.name,p.description,p.category,brandOf(p),...(p.tags || [])].join(' ').toLowerCase();
+      return (!q || text.includes(q)) && (category === 'all' || p.category === category) && (catalogBrand === 'all' || brandOf(p) === catalogBrand) && tags.every(t => text.includes(t));
     });
-    if(!list.length){
-      root.innerHTML = state.products.length
-        ? '<div class="empty-state">По вашему запросу ничего не найдено. Попробуйте другое название или категорию.</div>'
-        : '<div class="catalog-unavailable"><p>Онлайн-каталог сейчас недоступен.<br>Актуальные материалы и документация доступны на сайтах брендов.</p><a href="#brands">Перейти к брендам ↗</a></div>';
-      return;
-    }
-
-    root.innerHTML = list.map(cardHtml).join('');
+    if(sort === 'price-asc' || sort === 'price-desc') list.sort((a,b) => {
+      const av = Number(a.price), bv = Number(b.price);
+      if(!av && !bv) return 0;
+      if(!av) return 1;
+      if(!bv) return -1;
+      return sort === 'price-asc' ? av-bv : bv-av;
+    });
+    if(sort === 'name') list.sort((a,b)=>a.name.localeCompare(b.name,'ru'));
+    document.querySelectorAll('[data-mobile-meta]').forEach(el => {
+      const n=list.length, mod=n%100;
+      el.textContent = n + ' ' + (mod>=11 && mod<=14 ? 'товаров' : n%10===1 ? 'товар' : n%10>=2 && n%10<=4 ? 'товара' : 'товаров');
+    });
+    const title=document.querySelector('[data-catalog-title]');
+    if(title) title.textContent=q ? 'Результаты поиска' : category!=='all' ? category : catalogBrand!=='all' ? catalogBrand : 'Все материалы';
+    root.setAttribute('aria-busy','false');
+    root.innerHTML = list.length ? list.map(cardHtml).join('') : '<div class="catalog-empty"><h2>Материалы не найдены</h2><p>Попробуйте другое название или сбросьте фильтры.</p><button class="chip" data-clear-catalog>Сбросить фильтры</button></div>';
     bindCardEvents(root);
+    root.querySelector('[data-clear-catalog]')?.addEventListener('click',resetCatalog);
+    document.querySelectorAll('[data-brand]').forEach(btn=>{const active=btn.dataset.brand===catalogBrand;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));});
+    document.querySelectorAll('[data-nav-category]').forEach(a=>a.classList.toggle('active',a.dataset.navCategory===category));
+    const tokens = [];
+    if(category!=='all')tokens.push(['category',category]);
+    if(tags.length)tokens.push(['tags',tags.join(', ')]);
+    const active=document.querySelector('[data-active-filters]');
+    if(active){active.hidden=!tokens.length;active.innerHTML=tokens.map(([key,value])=>`<button data-remove-filter="${key}" aria-label="Убрать фильтр ${escapeHtml(value)}">${escapeHtml(value)}<span aria-hidden="true">×</span></button>`).join('');active.querySelectorAll('button').forEach(btn=>btn.onclick=()=>{const el=document.querySelector(btn.dataset.removeFilter==='category'?'[data-category]':'[data-tags]');el.value=btn.dataset.removeFilter==='category'?'all':'';renderProducts();});}
+    const count=document.querySelector('[data-filter-count]');if(count){count.hidden=!tokens.length;count.textContent=tokens.length;}
+    if(document.body.classList.contains('market-home')){
+      const url=new URL(location.href);url.search='';
+      if(q)url.searchParams.set('q',q);
+      if(category!=='all')url.searchParams.set('category',category);
+      if(catalogBrand!=='all')url.searchParams.set('brand',catalogBrand);
+      if(tags.length)url.searchParams.set('tags',tags.join(','));
+      if(sort!=='popular')url.searchParams.set('sort',sort);
+      history.replaceState(null,'',url);
+    }
   }
-
+  function resetCatalog(){
+    catalogBrand='all';
+    for(const key of ['search','tags']){const el=document.querySelector('[data-'+key+']');if(el)el.value='';}
+    const category=document.querySelector('[data-category]');if(category)category.value='all';
+    const sort=document.querySelector('[data-sort]');if(sort)sort.value='popular';
+    renderProducts();
+  }
   function cardHtml(p){
-    return `
-      <article class="product-card">
-          <div class="card-media">
-            <a class="card-link" href="product.html?id=${encodeURIComponent(p.id)}" aria-label="${escapeHtml(p.name)}"><img src="${escapeHtml(p.image || p.imageUrl || '')}" alt="${escapeHtml(p.name)}" loading="lazy" decoding="async"></a>
-            <div class="card-actions">
-              <button class="card-fab ${inFavs(p.id) ? 'active' : ''}" type="button" data-fav="${p.id}" aria-label="В избранное">
-                ${iconHeart()}
-              </button>
-              <button class="card-fab" type="button" data-cart="${p.id}" aria-label="В корзину">
-                ${iconPlus()}
-              </button>
-            </div>
-          </div>
-        <div class="card-body">
-          <div class="card-topline">
-            <div>
-              <h3 class="card-name"><a href="product.html?id=${encodeURIComponent(p.id)}">${escapeHtml(p.name)}</a></h3>
-              <div class="card-meta">${escapeHtml(p.category)} · ${escapeHtml(p.color)}</div>
-            </div>
-            <div class="card-meta">${p.rating ? `★ ${p.rating}` : 'Тех. решение'}</div>
-          </div>
-          <div class="price-row">
-            <div class="price">${fmtPrice(p.price)}</div>
-            ${p.oldPrice ? `<div class="old-price">${fmtPrice(p.oldPrice)}</div>` : ''}
-          </div>
-          <div class="card-bottom">
-            <div class="badges">
-              ${p.tags.slice(0,2).map(tag => `<span class="pill">${escapeHtml(tag)}</span>`).join('')}
-            </div>
-            <button class="add-btn" type="button" data-cart-main="${p.id}">
-              ${iconCart()}<span>В корзину</span>
-            </button>
-          </div>
-        </div>
-      </article>
-    `;
+    const id=escapeHtml(p.id), name=escapeHtml(p.name), href='product.html?id='+encodeURIComponent(p.id);
+    return `<article class="product-card"><div class="card-media${p.logoOnly?' logo-only':''}" data-caption="${escapeHtml(p.category)}"><a class="card-link" href="${href}" aria-label="${name}"><img src="${escapeHtml(p.image || p.imageUrl || '')}" alt="${name}" width="360" height="280" loading="lazy" decoding="async"></a><div class="card-actions"><button class="card-fab ${inFavs(p.id)?'active':''}" type="button" data-fav="${id}" aria-label="${inFavs(p.id)?'Убрать из избранного':'В избранное'}: ${name}" aria-pressed="${inFavs(p.id)}">${iconHeart()}</button></div></div><div class="card-body"><h3 class="card-name"><a href="${href}">${name}</a></h3><p class="card-description">${escapeHtml(p.description || p.category)}</p>${Number(p.price)>0?`<div class="card-price">${fmtPrice(p.price)}</div>`:''}<button class="add-btn" type="button" data-cart-main="${id}">${iconQuote()}<span>${cartItem(p.id)?'В заявке':'Запросить цену'}</span></button></div></article>`;
   }
+  function iconQuote(){return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9M14 3l5 5h-5zM8 8h2M8 12h5M8 16h3"/><circle cx="18" cy="17" r="3"/><path d="m20 19 2 3"/></svg>';}
 
   function bindCardEvents(root){
     root.querySelectorAll('[data-fav]').forEach(btn => {
@@ -253,44 +238,36 @@
   }
 
   function initCatalogControls(){
-    const categorySelect = document.querySelector('[data-category]');
-    if(categorySelect){
-      categorySelect.innerHTML = '<option value="all">Все категории</option>' + [...new Set(state.products.map(p => p.category).filter(Boolean))].map(category => `<option value="${escapeHtml(category)}">${escapeHtml(category)}</option>`).join('');
+    if(!document.querySelector('[data-products]')) return;
+    const categorySelect=document.querySelector('[data-category]');
+    if(categorySelect) categorySelect.innerHTML='<option value="all">Все категории</option>'+[...new Set(state.products.map(p=>p.category).filter(Boolean))].map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    function readUrl(){
+      const params=new URLSearchParams(location.search);
+      catalogBrand=params.get('brand') || 'all';
+      for(const [key,defaultValue] of [['search',''],['category','all'],['sort','popular'],['tags','']]){
+        const el=document.querySelector('[data-'+key+']');
+        if(el){el.value=params.get(key==='search'?'q':key)||defaultValue;if(el.tagName==='SELECT'&&!el.value)el.value=defaultValue;}
+      }
+      renderProducts();
     }
-    const controls = document.querySelectorAll('[data-search],[data-category],[data-sort],[data-tags]');
-    controls.forEach(el => el.addEventListener('input', renderProducts));
-    controls.forEach(el => el.addEventListener('change', renderProducts));
-
-    const openFiltersBtn = document.querySelector('[data-open-filters]');
-    const closeFiltersBtn = document.querySelector('[data-close-filters]');
-    const filtersPanel = document.querySelector('[data-filters-panel]');
-    function setFiltersOpen(next){
-      document.body.classList.toggle('filters-open', !!next);
-    }
-    openFiltersBtn?.addEventListener('click', () => setFiltersOpen(true));
-    closeFiltersBtn?.addEventListener('click', () => setFiltersOpen(false));
-    filtersPanel?.addEventListener('click', e => e.stopPropagation());
-    document.addEventListener('click', e => {
-      if(!document.body.classList.contains('filters-open')) return;
-      const insidePanel = e.target.closest('[data-filters-panel]');
-      const opener = e.target.closest('[data-open-filters]');
-      if(!insidePanel && !opener){ setFiltersOpen(false); }
-    });
-    document.addEventListener('keydown', e => {
-      if(e.key === 'Escape'){ setFiltersOpen(false); }
-    });
-
-    document.querySelectorAll('[data-quick-category]').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('[data-quick-category]').forEach(x => x.classList.remove('active'));
-        btn.classList.add('active');
-        const select = document.querySelector('[data-category]');
-        if(select){ select.value = btn.dataset.quickCategory; }
-        renderProducts();
-        if(window.innerWidth <= 767){ setFiltersOpen(false); }
-      });
-    });
-    renderProducts();
+    document.querySelectorAll('[data-search],[data-tags]').forEach(el=>el.addEventListener('input',renderProducts));
+    document.querySelectorAll('[data-category],[data-sort]').forEach(el=>el.addEventListener('change',renderProducts));
+    const search=document.querySelector('.market-search');
+    search?.addEventListener('submit',e=>{e.preventDefault();renderProducts();document.querySelector('[data-search]').blur();});
+    search?.addEventListener('reset',e=>{e.preventDefault();document.querySelector('[data-search]').value='';renderProducts();});
+    document.querySelectorAll('[data-brand]').forEach(btn=>btn.addEventListener('click',()=>{catalogBrand=btn.dataset.brand;renderProducts();}));
+    document.querySelectorAll('[data-nav-category],[data-solution],[data-brand-link]').forEach(link=>link.addEventListener('click',e=>{
+      e.preventDefault();
+      if(link.dataset.brandLink){catalogBrand=link.dataset.brandLink;categorySelect.value='all';}
+      else{categorySelect.value=link.dataset.navCategory || link.dataset.solution;catalogBrand='all';}
+      renderProducts();
+      document.querySelector('[data-catalog-toggle]')?.setAttribute('aria-expanded','false');
+      const menu=document.querySelector('#catalog-menu');if(menu)menu.hidden=true;
+      if(link.dataset.solution)document.querySelector('#catalog').scrollIntoView({behavior:'smooth'});
+    }));
+    document.querySelector('[data-reset-filters]')?.addEventListener('click',resetCatalog);
+    window.addEventListener('popstate',readUrl);
+    readUrl();
   }
 
   function renderProductPage(){
@@ -346,6 +323,7 @@
             </ul>
           </div>
 
+          ${p.sourceUrl ? `<a class="source-link" href="${escapeHtml(p.sourceUrl)}" target="_blank" rel="noopener">Информация о материале ↗</a>` : ''}
           <div class="action-row">
             <button class="primary-btn" type="button" data-buy-product="${p.id}">
               ${iconCart()} Добавить в заявку
@@ -386,7 +364,7 @@
       }
       save(LS_KEYS.cart, state.cart);
       syncCounters();
-      toast('Товар добавлен в корзину');
+      toast('Материал добавлен в заявку');
     });
     root.querySelector('[data-fav-product]')?.addEventListener('click', e => {
       toggleFav(p.id, null);
@@ -451,7 +429,7 @@
               <strong style="font-size:24px">${fmtPrice(total)}</strong>
             </div>
             <div class="action-row">
-              <button class="primary-btn" type="button">Оформить заказ</button>
+              ${state.cart.some(i=>getProduct(i.id)?.catalogOnly) ? `<a class="primary-btn" href="mailto:info@polymer-system.ru?subject=${encodeURIComponent('Запрос стоимости материалов PSL')}&body=${encodeURIComponent(state.cart.map(i=>{const p=getProduct(i.id);return p ? p.name+' — '+i.qty+' шт. ('+(i.size || 'фасовка по согласованию')+')' : '';}).filter(Boolean).join('\n'))}">Запросить стоимость ↗</a>` : '<button class="primary-btn" type="button">Оформить заказ</button>'}
               <a class="ghost-btn" href="index.html#catalog">Продолжить покупки</a>
             </div>
           </section>
@@ -615,7 +593,9 @@
 
   function initApp() {
     // Обновляем state.products после асинхронной загрузки из API
-    state.products = window.PRODUCTS || state.products;
+    state.products = (window.PRODUCTS || state.products).map(p=>({...p,id:String(p.id),name:p.name || '',tags:p.tags || [],sizes:p.sizes || [],details:p.details || [],color:p.color || '',description:p.description || ''}));
+    const view=new URLSearchParams(location.search).get('view');
+    if(['account','cart','favs'].includes(view)){document.querySelectorAll('[data-profile-nav]').forEach(btn=>btn.classList.toggle('active',btn.dataset.profileNav===view));}
     syncCounters();
     initCatalogControls();
     renderProductPage();

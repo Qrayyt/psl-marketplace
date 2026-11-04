@@ -18,7 +18,8 @@
     .then(function(products){
       if(Array.isArray(products)){
         var oldDemoCategories = ['Топы','Худи','Брюки','Верхняя одежда','Аксессуары','Обувь'];
-        window.PRODUCTS = products.filter(function(product){ return oldDemoCategories.indexOf(product.category) === -1; });
+        var materials = products.filter(function(product){ return oldDemoCategories.indexOf(product.category) === -1; });
+        if(materials.length) window.PRODUCTS = materials;
       }
     })
     .catch(function(e){
