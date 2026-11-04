@@ -3,7 +3,7 @@
   const opening = document.querySelector('[data-opening]');
   if(opening){
     let seen = false;
-    try { seen = sessionStorage.getItem('psl_opening_v2') === '1'; sessionStorage.setItem('psl_opening_v2','1'); } catch(e){}
+    try { seen = sessionStorage.getItem('psl_opening_svg_v1') === '1'; sessionStorage.setItem('psl_opening_svg_v1','1'); } catch(e){}
     if(seen || matchMedia('(prefers-reduced-motion: reduce)').matches) opening.remove();
     else {
       document.documentElement.classList.add('opening-active');
