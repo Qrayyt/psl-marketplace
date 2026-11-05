@@ -27,3 +27,5 @@
 @keyframes authAppear{from{opacity:0}to{opacity:1}}@keyframes authViewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}@keyframes authSpin{to{transform:rotate(360deg)}}
 @media(max-width:600px){.auth-shell{max-width:360px}.auth-header{padding-top:25px}.auth-back{font-size:0;gap:0}.auth-back span{font-size:18px}.auth-main{padding-top:42px;padding-bottom:28px}.auth-main h1{font-size:30px;letter-spacing:-1px}.auth-intro{font-size:13px;margin-bottom:23px}.auth-field input{font-size:16px;height:45px;padding-inline:13px}.auth-field{min-height:47px}.auth-submit,.auth-switch{min-height:45px}.auth-options{font-size:11px}.social-button{gap:12px}.social-button .provider-name{padding-left:12px;min-width:64px}.auth-footer{font-size:8px;padding-bottom:18px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+.demo-login-note{font-size:10px;color:#888;line-height:1.6;margin:15px 0 0}.demo-login-note b{font-weight:500;color:#555}

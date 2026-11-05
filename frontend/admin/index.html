@@ -1,48 +1,7 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PSL Admin</title>
-<link rel="stylesheet" href="admin.css">
-</head>
-<body>
-<div class="admin-layout">
-  <aside class="sidebar" data-sidebar>
-    <div class="sidebar-header">
-      <h2>PSL Admin</h2>
-    </div>
-    <nav class="sidebar-nav">
-      <button class="nav-item active" data-nav="dashboard">Дашборд</button>
-      <button class="nav-item" data-nav="products">Товары</button>
-      <button class="nav-item" data-nav="users">Пользователи</button>
-      <button class="nav-item" data-nav="orders">Заказы</button>
-      <button class="nav-item" data-nav="discounts">Скидки</button>
-      <button class="nav-item" data-nav="exchange">Обмен 1С</button>
-      <button class="nav-item" data-nav="audit">Аудит-лог</button>
-    </nav>
-    <div class="sidebar-footer">
-      <button class="nav-item logout" data-logout>Выйти</button>
-    </div>
-  </aside>
-  <main class="content" data-content>
-    <div class="loading">Загрузка...</div>
-  </main>
-</div>
-
-<!-- Модалка логина -->
-<div class="modal-overlay" data-login-modal style="display:none">
-  <div class="modal">
-    <h2>Вход в админ-панель</h2>
-    <form data-login-form>
-      <input type="email" name="email" placeholder="Email" required>
-      <input type="password" name="password" placeholder="Пароль" required>
-      <div class="error" data-login-error></div>
-      <button type="submit" class="btn primary">Войти</button>
-    </form>
-  </div>
-</div>
-
-<script src="admin.js"></script>
-</body>
-</html>
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#fff"><meta name="robots" content="noindex"><title>Панель управления — PSL</title><link rel="stylesheet" href="workspace.css"></head>
+<body data-admin-preview><a class="skip-link" href="#admin-content">К содержимому</a>
+<header class="admin-header"><button class="menu-toggle icon-button" aria-label="Открыть меню" aria-expanded="false" data-menu><span data-icon="menu"></span></button><a class="admin-brand" href="../index.html" aria-label="PSL — открыть сайт"><img src="../assets/images/psl-logo.svg" width="88" height="30" alt="PSL"><span>Polymer System<br>Labs</span></a><form class="admin-search" role="search"><span data-icon="search"></span><input type="search" aria-label="Поиск в панели управления" placeholder="Поиск по заказам, материалам, пользователям…" data-search><button type="reset" aria-label="Очистить поиск">×</button></form><div class="header-tools"><button class="icon-button bell" data-bell aria-expanded="false" aria-controls="notifications" aria-label="Уведомления"><span data-icon="bell"></span><i data-unread></i></button><details class="user-menu"><summary><span class="user-avatar" data-icon="user"></span><span>Администратор</span><span class="chevron" data-icon="chevron"></span></summary><div><a href="../index.html">Открыть сайт <span>↗</span></a><a href="../profile.html?view=overview">Личный кабинет <span>↗</span></a><button data-logout>Выйти из аккаунта <span>↗</span></button></div></details></div><section id="notifications" class="notifications" hidden><div class="panel-top"><h2>Уведомления</h2><span class="demo-badge">Демо</span></div><div data-notice-items></div></section></header>
+<div class="admin-layout"><aside class="sidebar" id="sidebar"><nav aria-label="Разделы управления"><a href="#overview" data-nav="overview"><span data-icon="home"></span>Обзор</a><a href="#orders" data-nav="orders"><span data-icon="cart"></span>Заказы</a><a href="#materials" data-nav="materials"><span data-icon="box"></span>Материалы</a><a href="#users" data-nav="users"><span data-icon="user"></span>Пользователи</a><a href="#content" data-nav="content"><span data-icon="image"></span>Контент</a><a href="#settings" data-nav="settings"><span data-icon="settings"></span>Настройки</a></nav><div class="sidebar-foot"><span class="demo-badge">Демо · тестовые данные</span><a href="../index.html">Вернуться на сайт ↗</a></div></aside><button class="sidebar-backdrop" data-close-menu aria-label="Закрыть меню"></button><main id="admin-content" tabindex="-1" aria-busy="true"><div class="loading">Открываем панель управления…</div></main></div>
+<dialog class="admin-dialog" aria-labelledby="dialog-title"></dialog><div class="toast" role="status" aria-live="polite"></div>
+<script defer src="../assets/js/data.js"></script><script defer src="../assets/js/api.js"></script><script defer src="workspace.js"></script></body></html>
