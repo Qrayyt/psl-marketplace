@@ -1,6 +1,6 @@
 (function(){
   var API = '/api';
-  var token = localStorage.getItem('psl_access_token');
+  var token = sessionStorage.getItem('psl_access_token') || localStorage.getItem('psl_access_token');
   var currentPage = 'dashboard';
 
   // --- API утилита ---
@@ -42,6 +42,7 @@
     });
     document.querySelector('[data-logout]').addEventListener('click', function() {
       token = null;
+      ['psl_access_token','psl_refresh_token','psl_user'].forEach(function(key){sessionStorage.removeItem(key);});
       localStorage.removeItem('psl_access_token');
       localStorage.removeItem('psl_refresh_token');
       localStorage.removeItem('psl_user');
@@ -73,6 +74,7 @@
           return;
         }
         token = data.data.accessToken;
+        ['psl_access_token','psl_refresh_token','psl_user'].forEach(function(key){sessionStorage.removeItem(key);});
         localStorage.setItem('psl_access_token', data.data.accessToken);
         localStorage.setItem('psl_refresh_token', data.data.refreshToken);
         localStorage.setItem('psl_user', JSON.stringify(data.data.user));

@@ -11,9 +11,29 @@
 
 (function(){
   var API_BASE = window.PSL_API_URL || '';
+  var APP_BASE = new URL('../../', document.currentScript.src);
+  function readAuth(key){try{return sessionStorage.getItem(key)||localStorage.getItem(key);}catch(e){return null;}}
+  function authStore(){return sessionStorage.getItem('psl_access_token') ? sessionStorage : localStorage;}
+  function safeReturn(value){
+    var fallback = new URL('profile.html?view=overview',APP_BASE);
+    try{
+      if(!value || /[\x00-\x1f\x7f]/.test(value)) return fallback.href;
+      var url = new URL(value,APP_BASE);
+      if(url.username || url.password || url.origin !== APP_BASE.origin || !/^https?:$/.test(url.protocol) || !url.pathname.startsWith(APP_BASE.pathname)) return fallback.href;
+      var path=url.pathname.slice(APP_BASE.pathname.length);
+      if(!['','index.html','profile.html','product.html','ai-chat.html','privacy.html','admin/','admin/index.html'].includes(path)) return fallback.href;
+      return url.href;
+    }catch(e){return fallback.href;}
+  }
+  function authUrl(mode,target){
+    var url=new URL('auth.html',APP_BASE);
+    url.searchParams.set('mode',['login','register','forgot','reset'].includes(mode)?mode:'login');
+    url.searchParams.set('returnTo',safeReturn(target||location.href));
+    return url.href;
+  }
 
   // Асинхронная загрузка товаров (не блокирует браузер)
-  window.PSL_PRODUCTS_READY = fetch(API_BASE + '/api/products/all', { signal: AbortSignal.timeout(5000) })
+  window.PSL_PRODUCTS_READY = document.body.hasAttribute('data-auth-page') ? Promise.resolve() : fetch(API_BASE + '/api/products/all', { signal: AbortSignal.timeout(5000) })
     .then(function(r){ return r.json(); })
     .then(function(products){
       if(Array.isArray(products)){
@@ -30,34 +50,26 @@
   window.PSL_API = {
     baseUrl: API_BASE,
 
-    getToken: function(){
-      return localStorage.getItem('psl_access_token');
+    safeReturn: safeReturn,
+    authUrl: authUrl,
+    redirectToAuth: function(mode,target){ location.assign(authUrl(mode,target)); },
+    getToken: function(){ return readAuth('psl_access_token'); },
+    getRefreshToken: function(){ return readAuth('psl_refresh_token'); },
+    setTokens: function(access,refresh,remember){
+      var selected=typeof remember==='boolean'?(remember?localStorage:sessionStorage):authStore();
+      var other=selected===localStorage?sessionStorage:localStorage;
+      try{
+        selected.setItem('psl_access_token',access);
+        selected.setItem('psl_refresh_token',refresh);
+      }catch(e){selected.removeItem('psl_access_token');selected.removeItem('psl_refresh_token');throw Error('Не удалось сохранить сессию. Разрешите хранение данных для этого сайта.');}
+      ['psl_access_token','psl_refresh_token','psl_user'].forEach(function(key){other.removeItem(key);});
     },
-
-    setTokens: function(access, refresh){
-      localStorage.setItem('psl_access_token', access);
-      localStorage.setItem('psl_refresh_token', refresh);
-    },
-
     clearTokens: function(){
-      localStorage.removeItem('psl_access_token');
-      localStorage.removeItem('psl_refresh_token');
+      [localStorage,sessionStorage].forEach(function(storage){storage.removeItem('psl_access_token');storage.removeItem('psl_refresh_token');});
     },
-
-    getUser: function(){
-      try {
-        var raw = localStorage.getItem('psl_user');
-        return raw ? JSON.parse(raw) : null;
-      } catch(e) { return null; }
-    },
-
-    setUser: function(user){
-      localStorage.setItem('psl_user', JSON.stringify(user));
-    },
-
-    clearUser: function(){
-      localStorage.removeItem('psl_user');
-    },
+    getUser: function(){try{var raw=authStore().getItem('psl_user');return raw?JSON.parse(raw):null;}catch(e){return null;}},
+    setUser: function(user){authStore().setItem('psl_user',JSON.stringify(user));},
+    clearUser: function(){localStorage.removeItem('psl_user');sessionStorage.removeItem('psl_user');},
 
     // Авторизованный fetch
     fetch: function(path, options){
@@ -83,7 +95,7 @@
     },
 
     refreshToken: function(){
-      var refreshToken = localStorage.getItem('psl_refresh_token');
+      var refreshToken = this.getRefreshToken();
       if(!refreshToken) return Promise.resolve(false);
 
       var self = this;
@@ -142,7 +154,7 @@
     },
 
     logout: function(){
-      var refreshToken = localStorage.getItem('psl_refresh_token');
+      var refreshToken = this.getRefreshToken();
       var self = this;
       return fetch(API_BASE + '/api/auth/logout', {
         method: 'POST',
