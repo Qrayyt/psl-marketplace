@@ -1,60 +1,32 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <title>PSL — подбор материала</title>
-  <link rel="stylesheet" href="assets/css/styles.css">
-  <link rel="stylesheet" href="assets/css/tablet-style.css">
-  <link rel="stylesheet" href="assets/css/mobile-style.css">
-  <link rel="stylesheet" href="assets/css/auth-ui.css">
-  <link rel="stylesheet" href="assets/css/psl.css">
-  <script defer src="assets/js/experience.js"></script>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="description" content="Помощник PSL: поиск материалов, сравнение продукции и визуальные ответы по каталогу.">
+  <title>PSL — ассистент</title>
+  <link rel="icon" href="assets/images/psl-logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="assets/css/assistant.css">
+  <script defer src="assets/js/data.js"></script>
+  <script defer src="assets/js/assistant-catalog.js"></script>
+  <script defer src="assets/js/assistant.js"></script>
 </head>
 <body>
-<div class="site-shell">
-
-<header class="masthead">
-  <a class="psl-brand" href="index.html" aria-label="PSL — главная"><img src="assets/images/psl-logo.webp" width="80" height="31" alt="PSL"><span>POLYMER<br>SYSTEM LABS</span></a>
-  <nav aria-label="Основная навигация"><a href="index.html#brands">Бренды</a><a href="index.html#catalog">Каталог</a><a href="https://polymer-system.ru/documents" target="_blank" rel="noopener">Документация ↗</a></nav>
-  <div class="header-actions"><a href="profile.html" class="account-link" data-auth-btn>Личный кабинет ↗</a><button class="menu-toggle" aria-expanded="false" aria-controls="mobile-menu" aria-label="Открыть меню"><span></span><span></span></button></div>
-</header>
-<nav class="mobile-menu" id="mobile-menu" aria-label="Мобильная навигация" hidden><a href="index.html#brands">Бренды</a><a href="index.html#catalog">Каталог</a><a href="https://polymer-system.ru/documents">Документация ↗</a><a href="profile.html">Личный кабинет</a></nav>
-
-  <main class="chat-page">
-    <div class="container" style="height:100%">
-      <section class="chat-shell">
-        <aside class="chat-sidebar">
-          <h2 class="sidebar-title">PSL Подбор</h2>
-          <button class="new-chat" type="button" data-new-chat>+ Новый чат</button>
-          <div class="chat-history">
-            <button type="button" data-chat-preset="Нужно защитное покрытие для бетона">Покрытие для бетона</button>
-            <button type="button" data-chat-preset="Подбери систему для промышленного пола">Система для промышленного пола</button>
-            <button type="button" data-chat-preset="Что ты умеешь?">Что ты умеешь?</button>
-          </div>
-        </aside>
-        <div class="chat-main">
-          <div class="chat-topbar">
-            <button class="chat-menu-btn" type="button" data-chat-menu aria-label="Открыть чаты">
-              <span></span><span></span><span></span>
-            </button>
-            <div class="chat-model">PSL · поиск по каталогу</div>
-          </div>
-          <div class="chat-messages" data-chat-messages></div>
-          <form class="chat-composer" data-chat-form>
-            <div class="chat-box">
-              <textarea class="chat-textarea" data-chat-input placeholder="Спроси что угодно" rows="1"></textarea>
-              <button class="chat-send" type="submit">↑</button>
-            </div>
-          </form>
-        </div>
-      </section>
-    </div>
-  </main>
-</div>
-<script src="assets/js/data.js"></script>
-<script src="assets/js/api.js"></script>
-<script src="assets/js/app.js"></script>
-<script src="assets/js/auth-ui.js"></script>
+  <a class="skip" href="#conversation">К переписке</a>
+  <aside class="sidebar" aria-label="Боковая панель">
+    <div class="sidebar-top"><a href="index.html" class="brand" aria-label="PSL — на сайт"><img src="assets/images/psl-logo.svg" alt="PSL" width="62" height="25"></a><button class="icon-btn" data-sidebar aria-label="Закрыть боковую панель" title="Свернуть панель"><i data-icon="panel"></i></button></div>
+    <button class="sidebar-action" data-new><i data-icon="edit"></i>Новый чат<span>⌘ K</span></button>
+    <label class="history-search"><i data-icon="search"></i><input type="search" placeholder="Поиск чатов" aria-label="Поиск чатов" maxlength="100"></label>
+    <a class="sidebar-action catalog-link" href="index.html#catalog"><i data-icon="grid"></i>Каталог материалов<i data-icon="external"></i></a>
+    <div class="history-heading">Ваши чаты</div><nav class="history" aria-label="История диалогов"></nav>
+    <div class="sidebar-bottom"><div class="demo-label"><span></span>Предпросмотр · поиск по каталогу</div><a href="profile.html" class="account"><span class="avatar"><i data-icon="user"></i></span><div><strong>Личный кабинет</strong><small>Polymer System Labs</small></div><i data-icon="chevron"></i></a></div>
+  </aside>
+  <button class="backdrop" data-sidebar aria-label="Закрыть меню" tabindex="-1"></button>
+  <div class="workspace">
+    <header class="topbar"><div class="topbar-left"><button class="icon-btn open-sidebar" data-sidebar aria-label="Открыть боковую панель"><i data-icon="panel"></i></button><button class="icon-btn top-new" data-new aria-label="Новый чат"><i data-icon="edit"></i></button><span class="model">PSL Ассистент <span>Preview</span></span></div><div class="topbar-right"><a href="index.html#catalog" class="back-catalog">В каталог <i data-icon="external"></i></a><button class="icon-btn" data-info aria-label="О чате"><i data-icon="info"></i></button></div></header>
+    <main id="conversation" tabindex="-1"><div class="welcome"><div class="welcome-mark"><img src="assets/images/psl-logo.svg" alt="PSL" width="72" height="29"></div><h1>Что подберём для вашего проекта?</h1><p>Материалы PSL. Понятные сравнения. Визуальные ответы.</p><div class="suggestions"><button data-prompt="Покажи материалы для защиты бетона"><i data-icon="box"></i><strong>Найти материал</strong><span>Для защиты бетона</span></button><button data-prompt="Сравни плитку MATRIX HEX и MATRIX Квадрат"><i data-icon="compare"></i><strong>Сравнить товары</strong><span>MATRIX HEX и Квадрат</span></button><button data-prompt="Покажи схему слоёв промышленного пола"><i data-icon="layers"></i><strong>Посмотреть схему</strong><span>Слои промышленного пола</span></button><button data-prompt="Покажи гидроизоляцию SILFLEX"><i data-icon="drop"></i><strong>Найти гидроизоляцию</strong><span>Материалы SILFLEX</span></button></div></div><div class="thread" hidden></div></main>
+    <div class="composer-region"><button class="jump icon-btn" aria-label="К последнему сообщению" hidden><i data-icon="down"></i></button><div class="composer-wrap"><form class="composer"><label class="sr-only" for="message">Сообщение ассистенту</label><textarea id="message" rows="1" maxlength="4000" placeholder="Спросите о материалах PSL…"></textarea><div class="composer-tools"><button type="button" class="visual-toggle" aria-pressed="true" title="Карточки, сравнения и схемы внутри ответа"><i data-icon="spark"></i>Визуальные ответы<span>Вкл.</span></button><div class="composer-end"><span class="enter-hint">Enter ↵</span><button class="send" type="submit" aria-label="Отправить сообщение" disabled><i data-icon="up"></i></button></div></div></form><p class="composer-note">Предпросмотр без ИИ-модели. Технический подбор подтвердит специалист PSL.</p></div></div>
+  </div>
+  <dialog class="info-dialog" aria-labelledby="info-title"><button class="icon-btn" data-close-info aria-label="Закрыть окно"><i data-icon="close"></i></button><div class="dialog-mark"><i data-icon="spark"></i></div><h2 id="info-title">Больше, чем текст</h2><p>Визуальные ответы показывают материалы, сравнения и схемы прямо в переписке. Нажмите на карточку, чтобы открыть товар.</p><p>Сейчас работает поиск по каталогу PSL и демонстрация форматов ответа. Генерация через ИИ пока не подключена. История хранится в этом браузере.</p><button class="primary" data-close-info>Понятно</button></dialog>
+  <div class="toast" role="status" aria-live="polite"></div>
 </body>
 </html>
