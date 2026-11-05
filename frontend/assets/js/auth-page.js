@@ -7,7 +7,7 @@
   const paths={user:'<circle cx="12" cy="7" r="4"/><path d="M4 22v-2a8 8 0 0 1 16 0v2"/>',lock:'<rect x="4" y="10" width="16" height="12" rx="2"/><path d="M7 10V7a5 5 0 0 1 10 0v3M12 15v2"/>',arrow:'<path d="M3 12h17m-6-6 6 6-6 6"/>',eye:'<path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>',eyeOff:'<path d="m3 3 18 18M10 5a13 13 0 0 1 2 0c7 0 10 7 10 7a20 20 0 0 1-3 4M6 6a19 19 0 0 0-4 6s3 7 10 7a13 13 0 0 0 6-2M10 10a3 3 0 0 0 4 4"/>'};
   const icon=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[k]}</svg>`;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-  let mode=known.includes(params.get('mode'))?params.get('mode'):'login',controller=null,emailDraft='',busy=false;
+  let mode=known.includes(params.get('mode'))?params.get('mode'):'login',controller=null,emailDraft='',busy=false,transitionId=0;
   const back=document.querySelector('[data-back]');back.href=returnTo;
   document.querySelector('[data-year]').textContent=new Date().getFullYear();
   function field(name,label,type,ico,extra=''){
@@ -18,14 +18,29 @@
     controller?.abort();controller=null;busy=false;
     const reg=mode==='register',help=mode==='forgot'||mode==='reset';
     document.title=(help?'Восстановление доступа':reg?'Создать аккаунт':'Вход в аккаунт')+' — PSL';
-    root.innerHTML=help?`<h1>Восстановить доступ</h1><p class="auth-intro">Поможем вернуться в ваш аккаунт PSL.</p><section class="auth-help-panel"><p>Автоматическое восстановление пароля пока не подключено. Напишите в поддержку PSL с почты, указанной в аккаунте.</p><a class="auth-submit" href="mailto:info@polymer-system.ru?subject=${encodeURIComponent('PSL — восстановление доступа')}"><span>Написать в поддержку</span>${icon('arrow')}</a></section><a class="auth-switch" href="${esc(API.authUrl('login',returnTo))}" data-mode="login">Вернуться ко входу</a>`:`<h1>${reg?'Создать аккаунт':'Вход в аккаунт'}</h1><p class="auth-intro">${reg?'Сохраняйте материалы и управляйте запросами в личном кабинете PSL.':'Управляйте заказами, сохраняйте материалы<br class="desktop-break"> и отправляйте запросы.'}</p><form class="auth-form" data-login-form>${reg?field('name','Ваше имя','text','user','required autocomplete="name" maxlength="100"'):''}${field('email','Электронная почта','email','user',`required autocomplete="email" inputmode="email" maxlength="254" value="${esc(emailDraft)}"`)}${field('password','Пароль','password','lock',`required autocomplete="${reg?'new-password':'current-password'}" ${reg?'minlength="6"':''}`)}${reg?field('confirm','Повторите пароль','password','lock','required autocomplete="new-password" minlength="6"'):''}<div class="auth-options"><label class="auth-checkbox"><input type="checkbox" name="remember"><span>Запомнить меня</span></label>${!reg?`<a class="auth-link" href="${esc(API.authUrl('forgot',returnTo))}" data-mode="forgot">Забыли пароль?</a>`:''}</div>${reg?'<label class="auth-consent"><input type="checkbox" name="consent" required><span>Согласен с <a href="privacy.html" target="_blank" rel="noopener">политикой конфиденциальности</a></span></label>':''}<p class="form-status" role="status" aria-live="polite" data-error="false"></p><button class="auth-submit" type="submit"><span>${reg?'Создать аккаунт':'Войти'}</span>${icon('arrow')}</button></form>${social()}<a class="auth-switch" href="${esc(API.authUrl(reg?'login':'register',returnTo))}" data-mode="${reg?'login':'register'}">${reg?'Уже есть аккаунт? Войти':'Создать аккаунт'}</a>`;
+    const markup=help?`<h1>Восстановить доступ</h1><p class="auth-intro">Поможем вернуться в ваш аккаунт PSL.</p><section class="auth-help-panel"><p>Автоматическое восстановление пароля пока не подключено. Напишите в поддержку PSL с почты, указанной в аккаунте.</p><a class="auth-submit" href="mailto:info@polymer-system.ru?subject=${encodeURIComponent('PSL — восстановление доступа')}"><span>Написать в поддержку</span>${icon('arrow')}</a></section><a class="auth-switch" href="${esc(API.authUrl('login',returnTo))}" data-mode="login">Вернуться ко входу</a>`:`<h1>${reg?'Создать аккаунт':'Вход в аккаунт'}</h1><p class="auth-intro">${reg?'Сохраняйте материалы и управляйте запросами в личном кабинете PSL.':'Управляйте заказами, сохраняйте материалы<br class="desktop-break"> и отправляйте запросы.'}</p><form class="auth-form" data-login-form>${reg?field('name','Ваше имя','text','user','required autocomplete="name" maxlength="100"'):''}${field('email','Электронная почта','email','user',`required autocomplete="email" inputmode="email" maxlength="254" value="${esc(emailDraft)}"`)}${field('password','Пароль','password','lock',`required autocomplete="${reg?'new-password':'current-password'}" ${reg?'minlength="6"':''}`)}${reg?field('confirm','Повторите пароль','password','lock','required autocomplete="new-password" minlength="6"'):''}<div class="auth-options"><label class="auth-checkbox"><input type="checkbox" name="remember"><span>Запомнить меня</span></label>${!reg?`<a class="auth-link" href="${esc(API.authUrl('forgot',returnTo))}" data-mode="forgot">Забыли пароль?</a>`:''}</div>${reg?'<label class="auth-consent"><input type="checkbox" name="consent" required><span>Согласен с <a href="privacy.html" target="_blank" rel="noopener">политикой конфиденциальности</a></span></label>':''}<p class="form-status" role="status" aria-live="polite" data-error="false"></p><button class="auth-submit" type="submit"><span>${reg?'Создать аккаунт':'Войти'}</span>${icon('arrow')}</button></form>${social()}<a class="auth-switch" href="${esc(API.authUrl(reg?'login':'register',returnTo))}" data-mode="${reg?'login':'register'}">${reg?'Уже есть аккаунт? Войти':'Создать аккаунт'}</a>`;
+    root.innerHTML='<div class="auth-view">'+markup+'</div>';
   }
-  function switchMode(next,push=true){
+  async function switchMode(next,push=true){
     const email=root.querySelector('[name=email]');if(email)emailDraft=email.value;
+    const id=++transitionId;
+    controller?.abort();controller=null;
     mode=known.includes(next)?next:'login';
     if(push)history.pushState(null,'',API.authUrl(mode,returnTo));
-    render();
+    const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)')?.matches;
+    if(reduced || !root.animate){root.inert=false;root.style.overflow='';render();return;}
+    root.getAnimations().forEach(animation=>animation.cancel());
+    const oldHeight=root.getBoundingClientRect().height;
+    root.inert=true;
+    await root.animate([{opacity:1,transform:'translateY(0)'},{opacity:0,transform:'translateY(-5px)'}],{duration:110,easing:'ease-in',fill:'none'}).finished.catch(()=>{});
+    if(id!==transitionId)return;
+    render();root.inert=false;
+    const newHeight=root.getBoundingClientRect().height;
+    root.style.overflow='hidden';
+    await root.animate([{height:oldHeight+'px'},{height:newHeight+'px'}],{duration:280,easing:'cubic-bezier(.2,.75,.25,1)'}).finished.catch(()=>{});
+    if(id===transitionId)root.style.overflow='';
   }
+
   root.addEventListener('click',e=>{
     const link=e.target.closest('[data-mode]');if(link){e.preventDefault();switchMode(link.dataset.mode);return;}
     const toggle=e.target.closest('[data-password]');if(toggle){const input=root.querySelector(`[name="${toggle.dataset.password}"]`),show=input.type==='password';input.type=show?'text':'password';toggle.setAttribute('aria-pressed',String(show));toggle.setAttribute('aria-label',(show?'Скрыть ':'Показать ')+(toggle.dataset.password==='confirm'?'повтор пароля':'пароль'));toggle.innerHTML=icon(show?'eye':'eyeOff');}
