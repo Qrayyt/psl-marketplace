@@ -6,7 +6,7 @@ import { AppError } from '../utils/AppError';
 import { calculateProductDiscount, applyPromoCode } from '../services/discount.service';
 
 const addToCartSchema = z.object({
-  productId: z.string().uuid(),
+  productId: z.string().regex(/^[a-z0-9-]{1,100}$/i),
   size: z.string().min(1),
   quantity: z.coerce.number().min(1).default(1),
 });
@@ -17,7 +17,7 @@ const updateCartSchema = z.object({
 
 const syncCartSchema = z.object({
   items: z.array(z.object({
-    productId: z.string().uuid(),
+    productId: z.string().regex(/^[a-z0-9-]{1,100}$/i),
     size: z.string().min(1),
     quantity: z.coerce.number().min(1),
   })),

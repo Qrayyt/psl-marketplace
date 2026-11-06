@@ -1,3 +1,5 @@
+import multer from 'multer';
+import { listAdminProductDocuments, uploadProductDocument, deleteProductDocument } from '../controllers/product-documents.controller';
 import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/auth';
 
@@ -40,6 +42,12 @@ router.get('/stats', getStats);
 
 // Товары
 router.get('/products', listProducts);
+const documentUpload = multer({ storage: multer.memoryStorage(), limits: {
+  fileSize: 5 * 1024 * 1024, files: 1, fields: 2,
+} });
+router.get('/products/:id/documents', listAdminProductDocuments);
+router.post('/products/:id/documents', documentUpload.single('document'), uploadProductDocument);
+router.delete('/products/:id/documents/:documentId', deleteProductDocument);
 router.post('/products', createProduct);
 router.post('/products/import', importProducts);
 router.patch('/products/:id', updateProduct);

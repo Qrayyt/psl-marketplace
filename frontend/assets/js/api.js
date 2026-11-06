@@ -42,7 +42,7 @@
       if(Array.isArray(products)){
         var oldDemoCategories = ['Топы','Худи','Брюки','Верхняя одежда','Аксессуары','Обувь'];
         var materials = products.filter(function(product){ return oldDemoCategories.indexOf(product.category) === -1; });
-        if(materials.length) window.PRODUCTS = materials;
+        window.PRODUCTS = materials;
       }
     })
     .catch(function(e){
@@ -98,6 +98,7 @@
       }
       var token = this.getToken();
       var headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
+      if(options.body instanceof FormData) delete headers['Content-Type'];
       if(token) headers['Authorization'] = 'Bearer ' + token;
 
       var self = this;

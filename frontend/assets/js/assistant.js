@@ -8,7 +8,7 @@
   const key='psl_assistant_chats_v1',uid=()=>crypto.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);
   let chats=[],current=null,visual=true,busy=false,pending=null,toastTimer,filter='';
   try{const parsed=JSON.parse(localStorage.getItem(key));if(Array.isArray(parsed))chats=parsed.filter(c=>c&&typeof c.id==='string'&&typeof c.title==='string'&&Array.isArray(c.messages)).slice(0,40).map(c=>({...c,messages:c.messages.filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.text==='string').slice(-100)}));}catch{}
-  const product=id=>(window.PRODUCTS||[]).find(p=>p.id===id);
+  const product=id=>(window.PRODUCTS||[]).find(p=>p.id===id||p.catalogSlug===id);
   const href=id=>'product.html?id='+encodeURIComponent(id);
   function imageUrl(value){try{const u=new URL(value,location.href);return u.origin===location.origin&&/^https?:$/.test(u.protocol)?u.href:'assets/images/psl-logo.svg';}catch{return 'assets/images/psl-logo.svg';}}
   const resolveIds=b=>Array.isArray(b.ids)?[...new Set(b.ids)].map(product).filter(Boolean).slice(0,3):[];
@@ -36,7 +36,7 @@
   function openChat(id){cancel();current=id;render();if(innerWidth<=760)setSidebar(false);bottom();}
   function newChat(){cancel();current=null;filter='';search.value='';input.value='';updateInput();render();if(innerWidth<=760)setSidebar(false);input.focus();}
   function setSidebar(open){const mobile=innerWidth<=760;if(mobile){document.body.classList.toggle('sidebar-open',open);sidebar.inert=!open;}else{document.body.classList.toggle('sidebar-closed',!open);sidebar.inert=!open;}document.querySelector('.open-sidebar').setAttribute('aria-expanded',String(open));}
-  function answer(chat,text,prior,visualEnabled){busy=true;render();bottom();updateInput();const id=chat.id;pending=setTimeout(()=>{if(current!==id)return;const result=catalog.reply(text,prior);const ids=[...new Set((result.blocks||[]).flatMap(b=>b.ids||[]))];const responseText=visualEnabled?result.text:result.text.replace('Ниже карточка материала. В ней можно посмотреть подробности и запросить цену.','Ниже ссылка на материал: можно посмотреть подробности и запросить цену.').replace('Вот иллюстрация слоёв плиточного пола. Нажмите на слой или материал рядом — откроется его страница в каталоге.','Пример слоёв плиточного пола: плитка, клей / затирка, грунтовка, бетонное основание. Ссылки на материалы — ниже.').replace('Нашёл материалы по вашему запросу. Откройте карточку, чтобы посмотреть описание и доступную документацию.','Нашёл материалы по вашему запросу. По ссылкам ниже можно посмотреть описание и документацию.');chat.messages.push({role:'assistant',text:responseText,blocks:visualEnabled?result.blocks:[],links:visualEnabled?[]:ids,followups:result.followups});chat.updated=Date.now();cancel();save();render();bottom();},450);}
+  function answer(chat,text,prior,visualEnabled){busy=true;render();bottom();updateInput();const id=chat.id;const timer=setTimeout(async()=>{await window.PSL_PRODUCTS_READY;if(current!==id||pending!==timer)return;const result=catalog.reply(text,prior);const ids=[...new Set((result.blocks||[]).flatMap(b=>b.ids||[]))];const responseText=visualEnabled?result.text:result.text.replace('Ниже карточка материала. В ней можно посмотреть подробности и запросить цену.','Ниже ссылка на материал: можно посмотреть подробности и запросить цену.').replace('Вот иллюстрация слоёв плиточного пола. Нажмите на слой или материал рядом — откроется его страница в каталоге.','Пример слоёв плиточного пола: плитка, клей / затирка, грунтовка, бетонное основание. Ссылки на материалы — ниже.').replace('Нашёл материалы по вашему запросу. Откройте карточку, чтобы посмотреть описание и доступную документацию.','Нашёл материалы по вашему запросу. По ссылкам ниже можно посмотреть описание и документацию.');chat.messages.push({role:'assistant',text:responseText,blocks:visualEnabled?result.blocks:[],links:visualEnabled?[]:ids,followups:result.followups});chat.updated=Date.now();cancel();save();render();bottom();},450);pending=timer;}
   function submit(text){text=String(text||'').trim().slice(0,4000);if(!text||busy)return;let chat=active();if(!chat){chat={id:uid(),title:text.slice(0,52),updated:Date.now(),messages:[]};chats.unshift(chat);chats=chats.slice(0,40);current=chat.id;}if(chat.messages.length>=100){toast('Этот чат заполнен. Создайте новый диалог.');return;}const prior=[...chat.messages];chat.messages.push({role:'user',text});chat.updated=Date.now();chats=[chat,...chats.filter(c=>c.id!==chat.id)];input.value='';updateInput();save();answer(chat,text,prior,visual);}
   form.addEventListener('submit',e=>{e.preventDefault();if(busy){cancel();render();save();toast('Ответ остановлен');return;}submit(input.value);});
   input.addEventListener('input',updateInput);input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&innerWidth>760){e.preventDefault();if(!busy)submit(input.value);}});
@@ -60,5 +60,9 @@
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
   scroller.addEventListener('scroll',updateJump,{passive:true});
   let mobile=innerWidth<=760;window.addEventListener('resize',()=>{if(mobile!==(innerWidth<=760)){mobile=innerWidth<=760;document.body.classList.remove('sidebar-open','sidebar-closed');sidebar.inert=mobile;}updateJump();});
-  sidebar.inert=mobile;render();updateInput();
+  sidebar.inert=mobile;
+  (window.PSL_PRODUCTS_READY || Promise.resolve()).then(() => {
+    render();
+    updateInput();
+  });
 })();

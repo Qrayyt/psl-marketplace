@@ -9,6 +9,11 @@ import { invalidateProductsCache } from '../../services/cache.service';
 
 const createProductSchema = z.object({
   name: z.string().min(1),
+  brand: z.string().trim().max(100).nullable().optional(),
+  sku: z.string().trim().max(120).nullable().optional(),
+  sourceUrl: z.string().url().refine(url => /^https?:\/\//i.test(url)).nullable().optional(),
+  isActive: z.boolean().optional(),
+  logoOnly: z.boolean().optional(),
   price: z.number().min(0),
   oldPrice: z.number().min(0).optional().nullable(),
   category: z.string().min(1),
@@ -39,6 +44,9 @@ export async function listProducts(req: Request, res: Response, next: NextFuncti
       where.OR = [
         { name: { contains: search, mode: 'insensitive' } },
         { description: { contains: search, mode: 'insensitive' } },
+        { brand: { contains: search, mode: 'insensitive' } },
+        { sku: { contains: search, mode: 'insensitive' } },
+        { category: { contains: search, mode: 'insensitive' } },
       ];
     }
     if (category) where.category = category;
@@ -101,7 +109,10 @@ export async function updateProduct(req: Request, res: Response, next: NextFunct
       }
     }
 
-    const product = await prisma.product.update({ where: { id }, data });
+    const imageUrls = data.imageUrl && data.imageUrl !== existing.imageUrl && existing.imageUrls.length
+      ? [data.imageUrl, ...existing.imageUrls.filter(url => url !== data.imageUrl)]
+      : undefined;
+    const product = await prisma.product.update({ where: { id }, data: { ...data, imageUrls } });
     await invalidateProductsCache();
 
     await logAudit({

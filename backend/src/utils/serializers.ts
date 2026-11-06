@@ -24,6 +24,11 @@ interface DbProduct {
   accent: string | null;
   imageUrl: string | null;
   imageUrls?: string[];
+  brand?: string | null;
+  catalogSlug?: string | null;
+  sourceUrl?: string | null;
+  logoOnly?: boolean;
+  sku?: string | null;
   isActive: boolean;
   createdAt: Date | string;
 }
@@ -45,6 +50,12 @@ interface FrontProduct {
   image: string;
   imageUrls: string[];
   discountedPrice?: number;
+  brand?: string | null;
+  catalogSlug?: string | null;
+  sourceUrl?: string | null;
+  logoOnly?: boolean;
+  sku?: string | null;
+  catalogOnly: boolean;
 }
 
 // Преобразование товара из БД в формат фронтенда
@@ -59,6 +70,12 @@ export function serializeProduct(product: DbProduct, discountedPrice?: number): 
   const result: FrontProduct = {
     id: product.id,
     name: product.name,
+    brand: product.brand,
+    catalogSlug: product.catalogSlug,
+    sourceUrl: product.sourceUrl,
+    logoOnly: product.logoOnly,
+    sku: product.sku,
+    catalogOnly: product.price <= 0,
     price: product.price,
     oldPrice: product.oldPrice || 0,
     category: product.category,

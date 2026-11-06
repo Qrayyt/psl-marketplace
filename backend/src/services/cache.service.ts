@@ -2,7 +2,7 @@ import { redis } from '../config/redis';
 import { prisma } from '../config/db';
 import { serializeProducts } from '../utils/serializers';
 
-const PRODUCTS_ALL_KEY = 'cache:products:all';
+const PRODUCTS_ALL_KEY = 'cache:products:all:v2';
 const PRODUCTS_TTL = 300; // 5 минут
 
 // Получить все товары (с кэшем)

@@ -50,7 +50,7 @@
     return Number(v) > 0 ? new Intl.NumberFormat('ru-RU').format(v) + ' ₽' : 'По запросу';
   }
   function getProduct(id){
-    return state.products.find(p => p.id === id);
+    return state.products.find(p => (p.id === id || p.catalogSlug === id));
   }
   function cartCount(){
     return state.cart.reduce((acc, item) => acc + item.qty, 0);
@@ -218,7 +218,7 @@
   }
   function cardHtml(p){
     const id=escapeHtml(p.id), name=escapeHtml(p.name), href='product.html?id='+encodeURIComponent(p.id);
-    return `<article class="product-card"><div class="card-media${p.logoOnly?' logo-only':''}" data-caption="${escapeHtml(p.category)}"><a class="card-link" href="${href}" aria-label="${name}"><img src="${escapeHtml(p.image || p.imageUrl || '')}" alt="${name}" width="360" height="280" loading="lazy" decoding="async"></a><div class="card-actions"><button class="card-fab ${inFavs(p.id)?'active':''}" type="button" data-fav="${id}" aria-label="${inFavs(p.id)?'Убрать из избранного':'В избранное'}: ${name}" aria-pressed="${inFavs(p.id)}">${iconHeart()}</button></div></div><div class="card-body"><h3 class="card-name"><a href="${href}">${name}</a></h3><p class="card-description">${escapeHtml(p.description || p.category)}</p>${Number(p.price)>0?`<div class="card-price">${fmtPrice(p.price)}</div>`:''}<button class="add-btn" type="button" data-cart-main="${id}">${iconQuote()}<span>${cartItem(p.id)?'В заявке':'Запросить цену'}</span></button></div></article>`;
+    return `<article class="product-card"><div class="card-media${p.logoOnly?' logo-only':''}" data-caption="${escapeHtml(p.category)}"><a class="card-link" href="${href}" aria-label="${name}"><img src="${escapeHtml(p.image || p.imageUrl || 'assets/images/psl-logo.svg')}" alt="${name}" width="360" height="280" loading="lazy" decoding="async"></a><div class="card-actions"><button class="card-fab ${inFavs(p.id)?'active':''}" type="button" data-fav="${id}" aria-label="${inFavs(p.id)?'Убрать из избранного':'В избранное'}: ${name}" aria-pressed="${inFavs(p.id)}">${iconHeart()}</button></div></div><div class="card-body"><h3 class="card-name"><a href="${href}">${name}</a></h3><p class="card-description">${escapeHtml(p.description || p.category)}</p>${Number(p.price)>0?`<div class="card-price">${fmtPrice(p.price)}</div>`:''}<button class="add-btn" type="button" data-cart-main="${id}">${iconQuote()}<span>${cartItem(p.id)?'В заявке':'Запросить цену'}</span></button></div></article>`;
   }
   function iconQuote(){return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9M14 3l5 5h-5zM8 8h2M8 12h5M8 16h3"/><circle cx="18" cy="17" r="3"/><path d="m20 19 2 3"/></svg>';}
 
@@ -290,10 +290,10 @@
       <div class="product-layout">
         <section class="gallery-card">
           <div class="product-main-media">
-            <img src="${escapeHtml(p.image || p.imageUrl || '')}" alt="${escapeHtml(p.name)}">
+            <img src="${escapeHtml(p.image || p.imageUrl || 'assets/images/psl-logo.svg')}" alt="${escapeHtml(p.name)}">
           </div>
           <div class="product-thumbs">
-            ${(p.imageUrls && p.imageUrls.length > 1 ? p.imageUrls : []).map((url, i) => `<div class="thumb${i===0?' active':''}"><img src="${url}" alt="${escapeHtml(p.name)}" data-gallery-idx="${i}"></div>`).join('')}
+            ${(p.imageUrls && p.imageUrls.length > 1 ? p.imageUrls : []).map((url, i) => `<div class="thumb${i===0?' active':''}"><img src="${escapeHtml(url)}" alt="${escapeHtml(p.name)}" data-gallery-idx="${i}"></div>`).join('')}
           </div>
         </section>
         <section class="detail-card">
@@ -309,20 +309,23 @@
           <div class="product-price">${fmtPrice(p.price)} ${p.oldPrice ? `<span class="old-price" style="font-size:18px;margin-left:8px">${fmtPrice(p.oldPrice)}</span>` : ''}</div>
           <p class="product-copy">${escapeHtml(p.description)}</p>
 
-          <div class="option-block">
+          ${p.sizes?.length ? `<div class="option-block">
             <div class="option-label">Вариант / фасовка</div>
             <div class="size-row">
               ${(p.sizes || []).map((s,i) => `<button class="size-btn ${i===0?'active':''}" type="button" data-size="${escapeHtml(s)}">${escapeHtml(s)}</button>`).join('')}
             </div>
           </div>
 
-          <div class="option-block">
+          ` : ''}
+          ${p.details?.length ? `<div class="option-block">
             <div class="option-label">Характеристики</div>
             <ul class="detail-list">
               ${(p.details || []).map(item => `<li>${escapeHtml(item)}</li>`).join('')}
             </ul>
           </div>
 
+          ` : ''}
+          <div class="option-block" data-product-documents hidden></div>
           ${p.sourceUrl ? `<a class="source-link" href="${escapeHtml(p.sourceUrl)}" target="_blank" rel="noopener">Информация о материале ↗</a>` : ''}
           <div class="action-row">
             <button class="primary-btn" type="button" data-buy-product="${p.id}">
@@ -335,6 +338,8 @@
         </section>
       </div>
     `;
+    loadProductDocuments(root, p.id);
+
 
     let selectedSize = (p.sizes || [])[0] || null;
     root.querySelectorAll('[data-size]').forEach(btn => {
@@ -372,6 +377,24 @@
       button.classList.toggle('active-ish', inFavs(p.id));
       button.innerHTML = iconHeart() + (inFavs(p.id) ? ' Убрать из избранного' : ' В избранное');
     });
+  }
+
+  async function loadProductDocuments(root, id){
+    const section = root.querySelector('[data-product-documents]');
+    const endpoint = (window.PSL_API?.baseUrl || '') + '/api/products/' + encodeURIComponent(id) + '/documents';
+    try {
+      const response = await fetch(endpoint, {signal: AbortSignal.timeout(5000)});
+      if(!response.ok) return;
+      const result = await response.json();
+      if(!section?.isConnected || !Array.isArray(result.data) || !result.data.length) return;
+      section.innerHTML = '<div class="option-label">Документы</div><ul class="detail-list">' +
+        result.data.map(doc => '<li><a class="source-link" href="' +
+          escapeHtml(endpoint + '/' + encodeURIComponent(doc.id)) + '">' +
+          escapeHtml(doc.title) + ' · PDF ↓</a></li>').join('') + '</ul>';
+      section.hidden = false;
+    } catch {
+      // The storefront can still show the product when documents are unavailable.
+    }
   }
 
   function renderProfile(){

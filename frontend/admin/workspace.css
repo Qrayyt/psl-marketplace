@@ -7,3 +7,11 @@
 .visually-hidden{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}.check-row{display:flex;gap:10px;align-items:center;font-size:12px;margin:18px 0}.check-row input{width:17px;height:17px;accent-color:#111}body:has(#admin-content[aria-busy=true]) .sidebar nav{opacity:.6}
 
 @media(max-width:600px){.stat:nth-child(2) strong{font-size:clamp(11px,3.4vw,15px)}}
+
+.catalog-documents { margin-top: 24px; padding-top: 18px; border-top: 1px solid #e8e8e8; }
+.catalog-documents h3 { margin: 0 0 12px; font-size: 17px; }
+.catalog-document-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0; border-bottom: 1px solid #eee; }
+.catalog-document-row strong { overflow-wrap: anywhere; }
+.catalog-document-row small { display: block; color: #666; margin-top: 4px; }
+.catalog-documents form { margin-top: 16px; }
+.catalog-documents input[type=file] { max-width: 100%; }

@@ -5,7 +5,7 @@ import { successResponse, paginatedResponse } from '../utils/apiResponse';
 import { AppError } from '../utils/AppError';
 
 const syncFavoritesSchema = z.object({
-  productIds: z.array(z.string().uuid()),
+  productIds: z.array(z.string().regex(/^[a-z0-9-]{1,100}$/i)),
 });
 
 export async function getFavorites(req: Request, res: Response, next: NextFunction) {

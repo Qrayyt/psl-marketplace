@@ -1,3 +1,4 @@
+import multer from 'multer';
 import { Request, Response, NextFunction } from 'express';
 import { ZodError } from 'zod';
 import { AppError } from '../utils/AppError';
@@ -12,6 +13,10 @@ export function errorHandler(
 ) {
   if (err instanceof AppError) {
     return errorResponse(res, err.message, err.statusCode);
+  }
+
+  if (err instanceof multer.MulterError) {
+    return errorResponse(res, err.code === 'LIMIT_FILE_SIZE' ? 'Файл превышает допустимый размер' : 'Не удалось принять файл', 400);
   }
 
   if (err instanceof ZodError) {

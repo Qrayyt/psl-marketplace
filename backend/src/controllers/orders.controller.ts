@@ -39,6 +39,10 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
       throw new AppError('Корзина пуста', 400);
     }
 
+    if (cartItems.some(item => !item.product.isActive || item.product.price <= 0)) {
+      throw new AppError('В корзине есть скрытые материалы или позиции с ценой по запросу', 409);
+    }
+
     // Определяем адрес доставки
     let deliveryAddressId = data.addressId;
     if (!deliveryAddressId && data.address) {

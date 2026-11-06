@@ -82,7 +82,7 @@ export async function getProduct(req: Request, res: Response, next: NextFunction
   try {
     const id = req.params.id as string;
 
-    const product = await prisma.product.findUnique({ where: { id } });
+    const product = await prisma.product.findFirst({ where: { OR: [{ id }, { catalogSlug: id }] } });
     if (!product || !product.isActive) {
       throw new AppError('Товар не найден', 404);
     }

@@ -1,3 +1,4 @@
+import { listProductDocuments, downloadProductDocument } from '../controllers/product-documents.controller';
 import { Router } from 'express';
 import { listProducts, getProduct, getCategories, getAllProducts } from '../controllers/products.controller';
 import { optionalAuth } from '../middleware/auth';
@@ -65,6 +66,8 @@ router.get('/all', getAllProducts);
  *     summary: Карточка товара
  *     tags: [Каталог]
  */
+router.get('/:id/documents', listProductDocuments);
+router.get('/:id/documents/:documentId', downloadProductDocument);
 router.get('/:id', optionalAuth, getProduct);
 
 export default router;
