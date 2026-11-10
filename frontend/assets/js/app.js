@@ -23,15 +23,13 @@
   initIntro();
 
   const LS_KEYS = {
-    cart: 'marketplace_cart_v2',
-    favs: 'marketplace_favs_v2',
     chat: 'marketplace_ai_chat_v1'
   };
 
   const state = {
     products: window.PRODUCTS || [],
-    cart: load(LS_KEYS.cart, []),
-    favs: load(LS_KEYS.favs, []),
+    get cart(){ return window.PSLBasket.state.cart; },
+    get favs(){ return window.PSLBasket.state.favorites; },
     chat: load(LS_KEYS.chat, [
       { role: 'assistant', text: 'Напишите название материала или категорию для поиска по каталогу. Технический подбор выполняет специалист PSL.' }
     ])
@@ -47,7 +45,7 @@
     localStorage.setItem(key, JSON.stringify(value));
   }
   function fmtPrice(v){
-    return Number(v) > 0 ? new Intl.NumberFormat('ru-RU').format(v) + ' ₽' : 'По запросу';
+    return Number(v) > 0 ? new Intl.NumberFormat('ru-RU').format(v) + ' ₽' : 'Цена не указана';
   }
   function getProduct(id){
     return state.products.find(p => (p.id === id || p.catalogSlug === id));
@@ -56,7 +54,6 @@
     return state.cart.reduce((acc, item) => acc + item.qty, 0);
   }
   function inFavs(id){ return state.favs.includes(id); }
-  function cartItem(id){ return state.cart.find(i => i.id === id); }
 
   function syncCounters(){
     document.querySelectorAll('[data-cart-count]').forEach(el => {
@@ -90,72 +87,28 @@
     }, 1800);
   }
 
-  function toggleFav(id, btn){
-    const idx = state.favs.indexOf(id);
-    if(idx > -1){
-      state.favs.splice(idx, 1);
-      save(LS_KEYS.favs, state.favs);
-      if(btn){btn.classList.remove('active');btn.setAttribute('aria-pressed','false');btn.setAttribute('aria-label','В избранное: '+getProduct(id).name);}
-      toast('Убрано из избранного');
-    }else{
-      state.favs.unshift(id);
-      save(LS_KEYS.favs, state.favs);
-      if(btn){btn.classList.add('active');btn.setAttribute('aria-pressed','true');btn.setAttribute('aria-label','Убрать из избранного: '+getProduct(id).name);}
-      toast('Добавлено в избранное');
-    }
-    syncCounters();
-    renderProfile();
-  }
-
-  function addToCart(id, btn){
-    const existing = cartItem(id);
-    if(existing){
-      existing.qty += 1;
-    }else{
-      state.cart.push({ id, qty: 1, size: (getProduct(id)?.sizes || [])[0] || null });
-    }
-    save(LS_KEYS.cart, state.cart);
-    if(btn){
-      btn.classList.add('added');
-      btn.innerHTML = iconCheck() + '<span>Добавлено</span>';
-      setTimeout(() => {
-        btn.classList.remove('added');
-        btn.innerHTML = iconQuote() + '<span>В заявке</span>';
-      }, 1200);
-    }
-    syncCounters();
-    renderProfile();
-    toast('Материал добавлен в заявку');
-  }
-
-  function updateCartQty(id, delta){
-    const item = cartItem(id);
-    if(!item) return;
-    item.qty += delta;
-    if(item.qty <= 0){
-      state.cart = state.cart.filter(x => x.id !== id);
-      toast('Товар удалён из корзины');
-    }
-    save(LS_KEYS.cart, state.cart);
-    syncCounters();
-    renderProfile();
-  }
-
-  function setCartSize(id, size){
-    const item = cartItem(id);
-    if(item){
-      item.size = size;
-      save(LS_KEYS.cart, state.cart);
-      renderProfile();
+  async function toggleFav(id, btn){
+    if(btn) btn.disabled = true;
+    try {
+      await window.PSLBasket.toggleFavorite(id);
+      toast(inFavs(id) ? 'Добавлено в избранное' : 'Убрано из избранного');
+    } catch(error) {
+      toast(error.message);
+    } finally {
+      if(btn) btn.disabled = false;
     }
   }
 
-  function removeFromCart(id){
-    state.cart = state.cart.filter(i => i.id !== id);
-    save(LS_KEYS.cart, state.cart);
-    syncCounters();
-    renderProfile();
-    toast('Товар удалён из корзины');
+  async function addToCart(id, btn, size){
+    if(btn) btn.disabled = true;
+    try {
+      await window.PSLBasket.add(id, size);
+      toast('Материал добавлен в корзину');
+    } catch(error) {
+      toast(error.message);
+    } finally {
+      if(btn) btn.disabled = false;
+    }
   }
 
   let catalogBrand = 'all';
@@ -218,9 +171,8 @@
   }
   function cardHtml(p){
     const id=escapeHtml(p.id), name=escapeHtml(p.name), href='product.html?id='+encodeURIComponent(p.id);
-    return `<article class="product-card"><div class="card-media${p.logoOnly?' logo-only':''}" data-caption="${escapeHtml(p.category)}"><a class="card-link" href="${href}" aria-label="${name}"><img src="${escapeHtml(p.image || p.imageUrl || 'assets/images/psl-logo.svg')}" alt="${name}" width="360" height="280" loading="lazy" decoding="async"></a><div class="card-actions"><button class="card-fab ${inFavs(p.id)?'active':''}" type="button" data-fav="${id}" aria-label="${inFavs(p.id)?'Убрать из избранного':'В избранное'}: ${name}" aria-pressed="${inFavs(p.id)}">${iconHeart()}</button></div></div><div class="card-body"><h3 class="card-name"><a href="${href}">${name}</a></h3><p class="card-description">${escapeHtml(p.description || p.category)}</p>${Number(p.price)>0?`<div class="card-price">${fmtPrice(p.price)}</div>`:''}<button class="add-btn" type="button" data-cart-main="${id}">${iconQuote()}<span>${cartItem(p.id)?'В заявке':'Запросить цену'}</span></button></div></article>`;
+    return `<article class="product-card"><div class="card-media${p.logoOnly?' logo-only':''}" data-caption="${escapeHtml(p.category)}"><a class="card-link" href="${href}" aria-label="${name}"><img src="${escapeHtml(p.image || p.imageUrl || 'assets/images/psl-logo.svg')}" alt="${name}" width="360" height="280" loading="lazy" decoding="async"></a><div class="card-actions"><button class="card-fab ${inFavs(p.id)?'active':''}" type="button" data-fav="${id}" aria-label="${inFavs(p.id)?'Убрать из избранного':'В избранное'}: ${name}" aria-pressed="${inFavs(p.id)}">${iconHeart()}</button></div></div><div class="card-body"><h3 class="card-name"><a href="${href}">${name}</a></h3><p class="card-description">${escapeHtml(p.description || p.category)}</p>${Number(p.price)>0?`<div class="card-price">${fmtPrice(p.price)}</div>`:''}<button class="add-btn" type="button" data-cart-main="${id}" ${Number(p.price)>0?'':'disabled'}>${iconCart()}<span>В корзину</span></button></div></article>`;
   }
-  function iconQuote(){return '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h9M14 3l5 5h-5zM8 8h2M8 12h5M8 16h3"/><circle cx="18" cy="17" r="3"/><path d="m20 19 2 3"/></svg>';}
 
   function bindCardEvents(root){
     root.querySelectorAll('[data-fav]').forEach(btn => {
@@ -328,8 +280,8 @@
           <div class="option-block" data-product-documents hidden></div>
           ${p.sourceUrl ? `<a class="source-link" href="${escapeHtml(p.sourceUrl)}" target="_blank" rel="noopener">Информация о материале ↗</a>` : ''}
           <div class="action-row">
-            <button class="primary-btn" type="button" data-buy-product="${p.id}">
-              ${iconCart()} Добавить в заявку
+            <button class="primary-btn" type="button" data-buy-product="${escapeHtml(p.id)}" ${Number(p.price)>0?'':'disabled'}>
+              ${iconCart()} Добавить в корзину
             </button>
             <button class="ghost-btn ${inFavs(p.id) ? 'active-ish' : ''}" type="button" data-fav-product="${p.id}">
               ${iconHeart()} ${inFavs(p.id) ? 'Убрать из избранного' : 'В избранное'}
@@ -359,24 +311,8 @@
       });
     });
 
-    root.querySelector('[data-buy-product]')?.addEventListener('click', () => {
-      const existing = cartItem(p.id);
-      if(existing){
-        existing.qty += 1;
-        existing.size = selectedSize || existing.size;
-      }else{
-        state.cart.push({ id: p.id, qty: 1, size: selectedSize });
-      }
-      save(LS_KEYS.cart, state.cart);
-      syncCounters();
-      toast('Материал добавлен в заявку');
-    });
-    root.querySelector('[data-fav-product]')?.addEventListener('click', e => {
-      toggleFav(p.id, null);
-      const button = e.currentTarget;
-      button.classList.toggle('active-ish', inFavs(p.id));
-      button.innerHTML = iconHeart() + (inFavs(p.id) ? ' Убрать из избранного' : ' В избранное');
-    });
+    root.querySelector('[data-buy-product]')?.addEventListener('click', e => addToCart(p.id, e.currentTarget, selectedSize));
+    root.querySelector('[data-fav-product]')?.addEventListener('click', e => toggleFav(p.id, e.currentTarget));
   }
 
   async function loadProductDocuments(root, id){
@@ -395,118 +331,6 @@
     } catch {
       // The storefront can still show the product when documents are unavailable.
     }
-  }
-
-  function renderProfile(){
-    const root = document.querySelector('[data-profile-content]');
-    if(!root) return;
-
-    const view = document.querySelector('[data-profile-nav].active')?.dataset.profileNav || 'cart';
-    document.querySelectorAll('[data-profile-nav]').forEach(btn => {
-      btn.onclick = () => {
-        document.querySelectorAll('[data-profile-nav]').forEach(x => x.classList.remove('active'));
-        btn.classList.add('active');
-        renderProfile();
-      };
-    });
-
-    document.querySelector('[data-stat-cart]') && (document.querySelector('[data-stat-cart]').textContent = cartCount());
-    document.querySelector('[data-stat-favs]') && (document.querySelector('[data-stat-favs]').textContent = state.favs.length);
-    document.querySelector('[data-stat-total]') && (document.querySelector('[data-stat-total]').textContent = fmtPrice(state.cart.reduce((s,i)=>s+(getProduct(i.id)?.price || 0)*i.qty, 0)));
-
-    if(view === 'cart'){
-      if(!state.cart.length){
-        root.innerHTML = `<div class="empty-state">Корзина пока пустая. Возвращайся на главную и собирай каталог.</div>`;
-        return;
-      }
-      const total = state.cart.reduce((sum, item) => sum + (getProduct(item.id)?.price || 0) * item.qty, 0);
-      root.innerHTML = `
-        <div class="list-grid">
-          ${state.cart.map(item => {
-            const p = getProduct(item.id); if(!p) return '';
-            return `
-              <article class="profile-product">
-                <a class="thumb-small" href="product.html?id=${p.id}"><img src="${p.image}" alt="${escapeHtml(p.name)}"></a>
-                <div>
-                  <h3 class="card-name" style="margin-bottom:6px"><a href="product.html?id=${p.id}">${escapeHtml(p.name)}</a></h3>
-                  <div class="card-meta">${escapeHtml(p.category)} · ${escapeHtml(p.color)}</div>
-                  <div class="price-row"><div class="price" style="font-size:18px">${fmtPrice(p.price)}</div></div>
-                  <div class="size-row" style="margin-top:10px">
-                    ${p.sizes.map(size => `<button class="size-btn ${item.size===size?'active':''}" type="button" data-profile-size="${p.id}|${escapeHtml(size)}">${escapeHtml(size)}</button>`).join('')}
-                  </div>
-                </div>
-                <div class="profile-actions">
-                  <button class="ghost-btn" type="button" data-qty-down="${p.id}">−</button>
-                  <div class="pill">Кол-во: ${item.qty}</div>
-                  <button class="ghost-btn" type="button" data-qty-up="${p.id}">+</button>
-                  <button class="ghost-btn" type="button" data-remove-cart="${p.id}">Удалить</button>
-                </div>
-              </article>
-            `;
-          }).join('')}
-          <section class="summary-box">
-            <h3 class="card-name">Итого</h3>
-            <div class="divider"></div>
-            <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
-              <span class="muted">Товаров: ${cartCount()}</span>
-              <strong style="font-size:24px">${fmtPrice(total)}</strong>
-            </div>
-            <div class="action-row">
-              ${state.cart.some(i=>getProduct(i.id)?.catalogOnly) ? `<a class="primary-btn" href="mailto:info@polymer-system.ru?subject=${encodeURIComponent('Запрос стоимости материалов PSL')}&body=${encodeURIComponent(state.cart.map(i=>{const p=getProduct(i.id);return p ? p.name+' — '+i.qty+' шт. ('+(i.size || 'фасовка по согласованию')+')' : '';}).filter(Boolean).join('\n'))}">Запросить стоимость ↗</a>` : '<button class="primary-btn" type="button">Оформить заказ</button>'}
-              <a class="ghost-btn" href="index.html#catalog">Продолжить покупки</a>
-            </div>
-          </section>
-        </div>
-      `;
-      root.querySelectorAll('[data-qty-down]').forEach(btn => btn.onclick = () => updateCartQty(btn.dataset.qtyDown, -1));
-      root.querySelectorAll('[data-qty-up]').forEach(btn => btn.onclick = () => updateCartQty(btn.dataset.qtyUp, 1));
-      root.querySelectorAll('[data-remove-cart]').forEach(btn => btn.onclick = () => removeFromCart(btn.dataset.removeCart));
-      root.querySelectorAll('[data-profile-size]').forEach(btn => btn.onclick = () => {
-        const [id,size] = btn.dataset.profileSize.split('|');
-        setCartSize(id,size);
-      });
-      return;
-    }
-
-    if(view === 'favs'){
-      const items = state.favs.map(getProduct).filter(Boolean);
-      if(!items.length){
-        root.innerHTML = `<div class="empty-state">В избранном пока пусто. Нажимай на сердечки в каталоге — всё появится здесь.</div>`;
-        return;
-      }
-      root.innerHTML = `
-        <div class="list-grid">
-          ${items.map(p => `
-            <article class="profile-product">
-              <a class="thumb-small" href="product.html?id=${p.id}"><img src="${p.image}" alt="${escapeHtml(p.name)}"></a>
-              <div>
-                <h3 class="card-name" style="margin-bottom:6px"><a href="product.html?id=${p.id}">${escapeHtml(p.name)}</a></h3>
-                <div class="card-meta">${escapeHtml(p.category)} · ${escapeHtml(p.color)}</div>
-                <div class="price-row"><div class="price" style="font-size:18px">${fmtPrice(p.price)}</div></div>
-              </div>
-              <div class="profile-actions">
-                <button class="primary-btn" type="button" data-add-fav-cart="${p.id}">${iconCart()} В корзину</button>
-                <button class="ghost-btn" type="button" data-remove-fav="${p.id}">Убрать</button>
-              </div>
-            </article>
-          `).join('')}
-        </div>
-      `;
-      root.querySelectorAll('[data-add-fav-cart]').forEach(btn => btn.onclick = () => addToCart(btn.dataset.addFavCart));
-      root.querySelectorAll('[data-remove-fav]').forEach(btn => btn.onclick = () => toggleFav(btn.dataset.removeFav));
-      return;
-    }
-
-    root.innerHTML = `
-      <div class="summary-box">
-        <h3 class="card-name">Аккаунт</h3>
-        <p class="muted">Здесь дальше можно подключить авторизацию, адреса доставки, историю заказов, способы оплаты и реальные данные профиля.</p>
-        <div class="contact-grid">
-          <div class="contact-item"><div class="contact-label">Статус</div><div class="contact-value">Готово под интеграцию</div></div>
-          <div class="contact-item"><div class="contact-label">Следующий шаг</div><div class="contact-value">Подключить backend и checkout</div></div>
-        </div>
-      </div>
-    `;
   }
 
   function renderChat(){
@@ -622,13 +446,25 @@
     syncCounters();
     initCatalogControls();
     renderProductPage();
-    renderProfile();
     initChat();
   }
+
+  window.addEventListener('psl:basket', () => {
+    syncCounters();
+    document.querySelectorAll('[data-fav],[data-fav-product]').forEach(button => {
+      const id = button.dataset.fav || button.dataset.favProduct;
+      const selected = inFavs(id);
+      const label = selected ? 'Убрать из избранного' : 'В избранное';
+      button.classList.toggle(button.hasAttribute('data-fav-product') ? 'active-ish' : 'active', selected);
+      button.setAttribute('aria-pressed', String(selected));
+      button.setAttribute('aria-label', label + ': ' + (getProduct(id)?.name || 'Материал'));
+      if (button.hasAttribute('data-fav-product')) button.innerHTML = iconHeart() + ' ' + label;
+    });
+  });
 
   document.addEventListener('DOMContentLoaded', () => {
     // Ждём загрузку товаров из API (асинхронный fetch в api.js)
     var ready = window.PSL_PRODUCTS_READY || Promise.resolve();
-    ready.then(initApp).catch(initApp);
+    Promise.all([ready, window.PSLBasket.ready]).then(initApp).catch(initApp);
   });
 })();

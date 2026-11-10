@@ -1,5 +1,5 @@
 import multer from 'multer';
-import { listAdminProductDocuments, uploadProductDocument, deleteProductDocument } from '../controllers/product-documents.controller';
+import { listAdminProductDocuments, uploadProductDocument, replaceProductDocument, downloadProductDocument, deleteProductDocument } from '../controllers/product-documents.controller';
 import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/auth';
 
@@ -47,6 +47,8 @@ const documentUpload = multer({ storage: multer.memoryStorage(), limits: {
 } });
 router.get('/products/:id/documents', listAdminProductDocuments);
 router.post('/products/:id/documents', documentUpload.single('document'), uploadProductDocument);
+router.get('/products/:id/documents/:documentId', downloadProductDocument);
+router.put('/products/:id/documents/:documentId', documentUpload.single('document'), replaceProductDocument);
 router.delete('/products/:id/documents/:documentId', deleteProductDocument);
 router.post('/products', createProduct);
 router.post('/products/import', importProducts);

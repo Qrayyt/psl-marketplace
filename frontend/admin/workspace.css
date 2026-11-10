@@ -15,3 +15,8 @@
 .catalog-document-row small { display: block; color: #666; margin-top: 4px; }
 .catalog-documents form { margin-top: 16px; }
 .catalog-documents input[type=file] { max-width: 100%; }
+
+.order-note { white-space: pre-wrap; overflow-wrap: anywhere; }
+.detail-pairs a { text-decoration: underline; overflow-wrap: anywhere; }
+[data-order-status] { margin-top: 20px; }
+.catalog-document-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }

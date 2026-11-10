@@ -5,7 +5,7 @@ import { AppError } from '../utils/AppError';
 import { successResponse } from '../utils/apiResponse';
 
 const documentFields = {
-  id: true, title: true, kind: true, filename: true, createdAt: true,
+  id: true, title: true, kind: true, filename: true, createdAt: true, version: true, supersededById: true,
 } as const;
 
 const metadata = z.object({
@@ -18,7 +18,7 @@ export async function listProductDocuments(req: Request, res: Response, next: Ne
     const product = await prisma.product.findFirst({
       where: { OR: [{ id: (req.params.id as string) }, { catalogSlug: (req.params.id as string) }], isActive: true },
       select: {
-        documents: { select: documentFields, orderBy: { createdAt: 'desc' } },
+        documents: { where: { supersededById: null }, select: documentFields, orderBy: { createdAt: 'desc' } },
       },
     });
     if (!product) throw new AppError('Товар не найден', 404);
@@ -67,6 +67,37 @@ export async function uploadProductDocument(req: Request, res: Response, next: N
   }
 }
 
+export async function replaceProductDocument(req: Request, res: Response, next: NextFunction) {
+  try {
+    const file = req.file;
+    if (!file || file.buffer.subarray(0, 5).toString('ascii') !== '%PDF-') {
+      throw new AppError('Выберите PDF-файл', 400);
+    }
+    const productId = req.params.id as string;
+    const id = req.params.documentId as string;
+    const document = await prisma.$transaction(async tx => {
+      const previous = await tx.productDocument.findFirst({
+        where: { id, productId, supersededById: null },
+        select: { title: true, kind: true, filename: true, version: true },
+      });
+      if (!previous) throw new AppError('Актуальная версия документа не найдена', 404);
+      const updated = await tx.productDocument.create({
+        data: { ...previous, version: previous.version + 1, productId, content: new Uint8Array(file.buffer) },
+        select: documentFields,
+      });
+      const changed = await tx.productDocument.updateMany({
+        where: { id, productId, supersededById: null },
+        data: { supersededById: updated.id },
+      });
+      if (!changed.count) throw new AppError('Документ уже обновлён. Откройте его заново.', 409);
+      return updated;
+    });
+    successResponse(res, document, 201);
+  } catch (error) {
+    next(error);
+  }
+}
+
 export async function deleteProductDocument(req: Request, res: Response, next: NextFunction) {
   try {
     const result = await prisma.productDocument.deleteMany({
@@ -81,10 +112,15 @@ export async function deleteProductDocument(req: Request, res: Response, next: N
 
 export async function downloadProductDocument(req: Request, res: Response, next: NextFunction) {
   try {
+    const productId = req.params.id as string;
+    const admin = req.baseUrl === '/api/admin' && req.user?.role === 'ADMIN';
     const document = await prisma.productDocument.findFirst({
       where: {
-        id: (req.params.documentId as string),
-        product: { isActive: true, OR: [{ id: (req.params.id as string) }, { catalogSlug: (req.params.id as string) }] },
+        id: req.params.documentId as string,
+        ...(admin ? { productId } : {
+          supersededById: null,
+          product: { isActive: true, OR: [{ id: productId }, { catalogSlug: productId }] },
+        }),
       },
       select: { content: true, filename: true },
     });

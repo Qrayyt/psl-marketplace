@@ -45,20 +45,12 @@ export async function addFavorite(req: Request, res: Response, next: NextFunctio
       throw new AppError('Товар не найден', 404);
     }
 
-    const existing = await prisma.favorite.findUnique({
+    const favorite = await prisma.favorite.upsert({
       where: { userId_productId: { userId: req.user!.id, productId } },
-    });
-
-    if (existing) {
-      successResponse(res, existing);
-      return;
-    }
-
-    const favorite = await prisma.favorite.create({
-      data: { userId: req.user!.id, productId },
+      create: { userId: req.user!.id, productId },
+      update: {},
       include: { product: true },
     });
-
     successResponse(res, favorite, 201);
   } catch (err) {
     next(err);
@@ -136,15 +128,10 @@ export async function syncFavorites(req: Request, res: Response, next: NextFunct
       const product = await prisma.product.findUnique({ where: { id: productId } });
       if (!product || !product.isActive) continue;
 
-      const existing = await prisma.favorite.findUnique({
-        where: { userId_productId: { userId: req.user!.id, productId } },
+      await prisma.favorite.createMany({
+        data: [{ userId: req.user!.id, productId }],
+        skipDuplicates: true,
       });
-
-      if (!existing) {
-        await prisma.favorite.create({
-          data: { userId: req.user!.id, productId },
-        });
-      }
     }
 
     const favorites = await prisma.favorite.findMany({

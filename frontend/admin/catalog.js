@@ -50,7 +50,7 @@
       const rows = products.map(product => `<tr>
         <td><strong>${escape(product.name)}</strong><small>${escape(product.brand || product.sku || '')}</small></td>
         <td>${escape(product.category)}</td>
-        <td>${product.price > 0 ? escape(product.price.toLocaleString('ru-RU')) + ' ₽' : 'По запросу'}</td>
+        <td>${product.price > 0 ? escape(product.price.toLocaleString('ru-RU')) + ' ₽' : 'Цена не указана'}</td>
         <td><span class="status ${product.isActive ? 'dark' : 'outline'}">${product.isActive ? 'Опубликован' : 'Скрыт'}</span></td>
         <td><button class="white-button" data-catalog-edit="${escape(product.id)}">Изменить</button></td>
       </tr>`).join('');
@@ -89,7 +89,7 @@
           ${field('Категория', 'category', item.category, 'required maxlength="120" ' + locked)}
           ${field('Бренд', 'brand', item.brand, 'maxlength="100"')}
           ${field('Артикул', 'sku', item.sku, 'maxlength="120" ' + locked)}
-          ${field('Цена, ₽', 'price', item.price || '', 'type="number" min="0" step="0.01" placeholder="По запросу" ' + locked)}
+          ${field('Цена, ₽', 'price', item.price || '', 'type="number" min="0" step="0.01" placeholder="Укажите цену для продажи" ' + locked)}
           ${field('Ссылка на основное фото', 'imageUrl', item.imageUrl, 'maxlength="2000"')}
           ${field('Ссылка на источник', 'sourceUrl', item.sourceUrl, 'type="url" maxlength="2000"')}
           <label class="field">Публикация<select name="isActive">
@@ -130,8 +130,12 @@
       if (!root.isConnected) return;
       root.innerHTML = data.length
         ? data.map(doc => `<div class="catalog-document-row">
-            <div><strong>${escape(doc.title)}</strong><small>${escape(kinds[doc.kind] || kinds.other)} · PDF</small></div>
-            <button type="button" class="white-button" data-catalog-delete-doc="${escape(doc.id)}">Удалить</button>
+            <div><strong>${escape(doc.title)}</strong><small>${escape(kinds[doc.kind] || kinds.other)} · PDF · версия ${doc.version || 1} · ${doc.supersededById ? 'Архив' : 'Актуальная'}</small></div>
+            <div class="catalog-document-actions">
+              <button type="button" class="white-button" data-catalog-download-doc="${escape(doc.id)}" data-filename="${escape(doc.filename)}">Скачать</button>
+              ${doc.supersededById ? '' : `<button type="button" class="white-button" data-catalog-replace-doc="${escape(doc.id)}">Заменить PDF</button>
+              <button type="button" class="white-button" data-catalog-delete-doc="${escape(doc.id)}">Удалить</button>`}
+            </div>
           </div>`).join('')
         : '<p class="dialog-sub">Документы пока не прикреплены.</p>';
     } catch (error) {
@@ -205,6 +209,49 @@
       loadList();
     }
     if (button.hasAttribute('data-catalog-reload')) loadList();
+    if (button.dataset.catalogDownloadDoc) {
+      const root = button.closest('[data-catalog-documents]');
+      const endpoint = path(root.dataset.id) + '/documents/' + encodeURIComponent(button.dataset.catalogDownloadDoc);
+      try {
+        const response = await api.fetch(endpoint);
+        if (!response.ok) throw Error('Не удалось скачать PDF.');
+        const url = URL.createObjectURL(await response.blob());
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = button.dataset.filename;
+        link.click();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      } catch (error) {
+        if (root.isConnected) dialog.querySelector('[data-catalog-upload] [data-catalog-message]').textContent = error.message;
+      }
+    }
+    if (button.dataset.catalogReplaceDoc) {
+      const root = button.closest('[data-catalog-documents]');
+      const input = document.createElement('input');
+      input.type = 'file';
+      input.accept = 'application/pdf,.pdf';
+      input.addEventListener('change', async () => {
+        const file = input.files[0];
+        if (!file || !root.isConnected) return;
+        const message = dialog.querySelector('[data-catalog-upload] [data-catalog-message]');
+        button.disabled = true;
+        try {
+          if (file.size > 5 * 1024 * 1024) throw Error('Размер PDF превышает 5 МБ.');
+          const body = new FormData();
+          body.append('document', file);
+          await request(path(root.dataset.id) + '/documents/' + encodeURIComponent(button.dataset.catalogReplaceDoc), { method: 'PUT', body });
+          if (root.isConnected) {
+            message.textContent = 'Загружена новая версия PDF.';
+            loadDocuments();
+          }
+        } catch (error) {
+          if (root.isConnected) message.textContent = error.message;
+        } finally {
+          button.disabled = false;
+        }
+      }, { once: true });
+      input.click();
+    }
     if (button.dataset.catalogDeleteDoc && confirm('Удалить документ из карточки материала?')) {
       const root = button.closest('[data-catalog-documents]');
       button.disabled = true;

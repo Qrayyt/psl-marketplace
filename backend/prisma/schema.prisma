@@ -125,6 +125,12 @@ model Order {
   userId            String      @map("user_id")
   orderNumber       String      @unique @map("order_number")
   status            OrderStatus @default(NEW)
+  contactName       String?     @map("contact_name")
+  contactPhone      String?     @map("contact_phone")
+  contactEmail      String?     @map("contact_email")
+  company           String?
+  customerNote      String?     @map("customer_note")
+  requestId         String?     @map("request_id")
   deliveryAddressId String?     @map("delivery_address_id")
   deliveryMethod    String?     @map("delivery_method")
   total             Float       @default(0)
@@ -139,6 +145,7 @@ model Order {
   deliveryAddress   DeliveryAddress? @relation(fields: [deliveryAddressId], references: [id])
   items             OrderItem[]
 
+  @@unique([userId, requestId])
   @@index([syncedAt])
   @@map("orders")
 }
@@ -259,6 +266,8 @@ model ProductDocument {
   productId   String   @map("product_id")
   title       String
   kind        String
+  version        Int       @default(1)
+  supersededById String?   @map("superseded_by_id")
   filename    String
   content     Bytes
   createdAt   DateTime @default(now()) @map("created_at")

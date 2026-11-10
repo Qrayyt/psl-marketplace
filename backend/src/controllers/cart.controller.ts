@@ -7,21 +7,26 @@ import { calculateProductDiscount, applyPromoCode } from '../services/discount.s
 
 const addToCartSchema = z.object({
   productId: z.string().regex(/^[a-z0-9-]{1,100}$/i),
-  size: z.string().min(1),
-  quantity: z.coerce.number().min(1).default(1),
+  size: z.string().trim().min(1).max(200),
+  quantity: z.coerce.number().int().min(1).max(9999).default(1),
 });
 
 const updateCartSchema = z.object({
-  quantity: z.coerce.number().min(1),
+  size: z.string().trim().min(1).max(200).optional(),
+  quantity: z.coerce.number().int().min(1).max(9999),
 });
 
 const syncCartSchema = z.object({
   items: z.array(z.object({
     productId: z.string().regex(/^[a-z0-9-]{1,100}$/i),
-    size: z.string().min(1),
-    quantity: z.coerce.number().min(1),
+    size: z.string().trim().min(1).max(200),
+    quantity: z.coerce.number().int().min(1).max(9999),
   })),
 });
+
+function validSize(sizes: string[], size: string) {
+  return sizes.length ? sizes.includes(size) : size === 'Стандарт' || size === 'ONE SIZE';
+}
 
 export async function getCart(req: Request, res: Response, next: NextFunction) {
   try {
@@ -74,39 +79,16 @@ export async function addToCart(req: Request, res: Response, next: NextFunction)
     if (!product || !product.isActive) {
       throw new AppError('Товар не найден', 404);
     }
-    if (!product.sizes.includes(data.size)) {
+    if (!validSize(product.sizes, data.size)) {
       throw new AppError('Размер недоступен', 400);
     }
 
-    // Upsert - если уже есть, увеличиваем количество
-    const existing = await prisma.cartItem.findUnique({
-      where: {
-        userId_productId_size: {
-          userId: req.user!.id,
-          productId: data.productId,
-          size: data.size,
-        },
-      },
+    const item = await prisma.cartItem.upsert({
+      where: { userId_productId_size: { userId: req.user!.id, productId: data.productId, size: data.size } },
+      create: { userId: req.user!.id, ...data },
+      update: { quantity: { increment: data.quantity } },
+      include: { product: true },
     });
-
-    let item;
-    if (existing) {
-      item = await prisma.cartItem.update({
-        where: { id: existing.id },
-        data: { quantity: existing.quantity + data.quantity },
-        include: { product: true },
-      });
-    } else {
-      item = await prisma.cartItem.create({
-        data: {
-          userId: req.user!.id,
-          productId: data.productId,
-          size: data.size,
-          quantity: data.quantity,
-        },
-        include: { product: true },
-      });
-    }
 
     successResponse(res, item, 201);
   } catch (err) {
@@ -119,17 +101,28 @@ export async function updateCartItem(req: Request, res: Response, next: NextFunc
     const id = req.params.id as string;
     const data = updateCartSchema.parse(req.body);
 
-    const item = await prisma.cartItem.findFirst({
-      where: { id, userId: req.user!.id },
-    });
-    if (!item) {
-      throw new AppError('Элемент корзины не найден', 404);
-    }
-
-    const updated = await prisma.cartItem.update({
-      where: { id },
-      data: { quantity: data.quantity },
-      include: { product: true },
+    const userId = req.user!.id;
+    const updated = await prisma.$transaction(async tx => {
+      await tx.$queryRaw`SELECT id FROM "users" WHERE id = ${userId} FOR UPDATE`;
+      const item = await tx.cartItem.findFirst({ where: { id, userId }, include: { product: true } });
+      if (!item) throw new AppError('Элемент корзины не найден', 404);
+      if (data.size && data.size !== item.size) {
+        if (!item.product.isActive || !validSize(item.product.sizes, data.size)) {
+          throw new AppError('Фасовка недоступна', 400);
+        }
+        const target = await tx.cartItem.findUnique({
+          where: { userId_productId_size: { userId, productId: item.productId, size: data.size } },
+        });
+        if (target) {
+          await tx.cartItem.delete({ where: { id } });
+          return tx.cartItem.update({
+            where: { id: target.id },
+            data: { quantity: Math.min(9999, target.quantity + data.quantity) },
+            include: { product: true },
+          });
+        }
+      }
+      return tx.cartItem.update({ where: { id }, data, include: { product: true } });
     });
 
     successResponse(res, updated);
@@ -172,29 +165,12 @@ export async function syncCart(req: Request, res: Response, next: NextFunction) 
     for (const item of data.items) {
       const product = await prisma.product.findUnique({ where: { id: item.productId } });
       if (!product || !product.isActive) continue;
-      if (!product.sizes.includes(item.size)) continue;
+      if (!validSize(product.sizes, item.size)) continue;
 
-      const existing = await prisma.cartItem.findUnique({
-        where: {
-          userId_productId_size: {
-            userId: req.user!.id,
-            productId: item.productId,
-            size: item.size,
-          },
-        },
+      await prisma.cartItem.createMany({
+        data: [{ userId: req.user!.id, ...item }],
+        skipDuplicates: true,
       });
-
-      // Серверные данные приоритетнее - добавляем только если нет дубля
-      if (!existing) {
-        await prisma.cartItem.create({
-          data: {
-            userId: req.user!.id,
-            productId: item.productId,
-            size: item.size,
-            quantity: item.quantity,
-          },
-        });
-      }
     }
 
     // Возвращаем актуальную корзину

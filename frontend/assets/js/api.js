@@ -10,6 +10,7 @@
  */
 
 (function(){
+  var pendingRefresh;
   var API_BASE = window.PSL_API_URL || '';
   var APP_BASE = new URL('../../', document.currentScript.src);
   function demoUser(){
@@ -97,6 +98,7 @@
         return Promise.resolve(new Response(JSON.stringify({success:true,data:data}),{headers:{'Content-Type':'application/json'}}));
       }
       var token = this.getToken();
+      var userId = this.getUser()?.id;
       var headers = Object.assign({ 'Content-Type': 'application/json' }, options.headers || {});
       if(options.body instanceof FormData) delete headers['Content-Type'];
       if(token) headers['Authorization'] = 'Bearer ' + token;
@@ -105,8 +107,10 @@
       return fetch(API_BASE + path, Object.assign({}, options, { headers: headers }))
         .then(function(response){
           if(response.status === 401 && token){
-            return self.refreshToken().then(function(ok){
-              if(ok){
+            var refreshed = userId && self.getUser()?.id === userId && self.getToken() !== token
+              ? Promise.resolve(true) : self.getToken() === token ? self.refreshToken() : Promise.resolve(false);
+            return refreshed.then(function(ok){
+              if(ok && self.getToken() && (!userId || self.getUser()?.id === userId)){
                 headers['Authorization'] = 'Bearer ' + self.getToken();
                 return fetch(API_BASE + path, Object.assign({}, options, { headers: headers }));
               }
@@ -120,9 +124,12 @@
     refreshToken: function(){
       var refreshToken = this.getRefreshToken();
       if(!refreshToken) return Promise.resolve(false);
+      if(pendingRefresh?.token === refreshToken) return pendingRefresh.promise;
 
       var self = this;
-      return fetch(API_BASE + '/api/auth/refresh', {
+      var refresh = {token: refreshToken};
+      pendingRefresh = refresh;
+      refresh.promise = fetch(API_BASE + '/api/auth/refresh', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refreshToken: refreshToken })
@@ -132,14 +139,19 @@
         return response.json();
       })
       .then(function(data){
+        if(self.getRefreshToken() !== refreshToken) return false;
         self.setTokens(data.data.accessToken, data.data.refreshToken);
         return true;
       })
       .catch(function(){
-        self.clearTokens();
-        self.clearUser();
+        if(self.getRefreshToken() === refreshToken){
+          self.clearTokens();
+          self.clearUser();
+        }
         return false;
-      });
+      })
+      .finally(function(){ if(pendingRefresh === refresh) pendingRefresh = undefined; });
+      return refresh.promise;
     },
 
     register: function(email, password, name, phone){
