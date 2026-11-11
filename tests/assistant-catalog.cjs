@@ -2,7 +2,7 @@ const fs=require('node:fs');
 const vm=require('node:vm');
 const assert=require('node:assert/strict');
 const context=vm.createContext({window:{}});
-for(const file of ['data.js','assistant-catalog.js'])vm.runInContext(fs.readFileSync('frontend/assets/js/'+file,'utf8'),context);
+for(const file of ['data.js','assistant-catalog.js','assistant-format.js'])vm.runInContext(fs.readFileSync('frontend/assets/js/'+file,'utf8'),context);
 const {reply}=context.window.PSLChatCatalog;
 let r=reply('Покажи материалы для защиты бетона');
 assert(r.blocks[0].ids.includes('wiron'));
@@ -26,4 +26,11 @@ for(const query of ['Покажи WIRON','Покажи гидроизоляци�
  const answer=reply(query);
  for(const b of answer.blocks)for(const id of b.ids)assert(context.window.PRODUCTS.some(p=>p.id===id));
 }
+const render = context.window.PSLChatFormat.render;
+assert.match(render('### Ответ\n\n- **Факт**\n- *Деталь*\n\n1. Шаг\n\n> Важно'), /<h3>Ответ<\/h3><ul><li><strong>Факт<\/strong><\/li><li><em>Деталь<\/em><\/li><\/ul><ol><li>Шаг<\/li><\/ol><blockquote>Важно<\/blockquote>/);
+assert.equal(render('<img src=x onerror=alert(1)> **<script>**'), '<p>&lt;img src=x onerror=alert(1)&gt; <strong>&lt;script&gt;</strong></p>');
+assert.match(render('[ссылка](javascript:alert(1))'), /^<p>\[ссылка\]/);
+assert.match(reply('Какая цена WIRON?').text, /цена не опубликована/);
+assert.equal(reply('Покажи схему подключения электрощита').blocks.length, 0);
+assert.equal(reply('Расскажи подробнее о первом материале',[{role:'assistant',links:['wiron']}]).blocks[0].ids[0],'wiron');
 console.log('PASS: catalog matching, requested comparisons, visual schema, contextual follow-up, no invented prices or unknown products.');
