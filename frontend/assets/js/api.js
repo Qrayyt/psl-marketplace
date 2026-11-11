@@ -37,7 +37,7 @@
   }
 
   // Асинхронная загрузка товаров (не блокирует браузер)
-  window.PSL_PRODUCTS_READY = (document.body.hasAttribute('data-auth-page') || document.body.hasAttribute('data-admin-preview') || demoUser()) ? Promise.resolve() : fetch(API_BASE + '/api/products/all', { signal: AbortSignal.timeout(5000) })
+  window.PSL_PRODUCTS_READY = (document.body.hasAttribute('data-auth-page') || document.body.hasAttribute('data-admin-preview')) ? Promise.resolve() : fetch(API_BASE + '/api/products/all', { signal: AbortSignal.timeout(5000) })
     .then(function(r){ return r.json(); })
     .then(function(products){
       if(Array.isArray(products)){
