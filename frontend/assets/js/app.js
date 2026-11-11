@@ -124,7 +124,7 @@
     const tags = (document.querySelector('[data-tags]')?.value || '').toLowerCase().split(',').map(t=>t.trim()).filter(Boolean);
     let list = state.products.filter(p => {
       const text = [p.name,p.description,p.category,brandOf(p),...(p.tags || [])].join(' ').toLowerCase();
-      return (!q || text.includes(q)) && (category === 'all' || p.category === category) && (catalogBrand === 'all' || brandOf(p) === catalogBrand) && tags.every(t => text.includes(t));
+      return (!q || text.includes(q)) && (category === 'all' || p.category === category) && (catalogBrand === 'all' || brandOf(p).toLowerCase() === catalogBrand.toLowerCase()) && tags.every(t => text.includes(t));
     });
     if(sort === 'price-asc' || sort === 'price-desc') list.sort((a,b) => {
       const av = Number(a.price), bv = Number(b.price);
@@ -144,7 +144,7 @@
     root.innerHTML = list.length ? list.map(cardHtml).join('') : '<div class="catalog-empty"><h2>Материалы не найдены</h2><p>Попробуйте другое название или сбросьте фильтры.</p><button class="chip" data-clear-catalog>Сбросить фильтры</button></div>';
     bindCardEvents(root);
     root.querySelector('[data-clear-catalog]')?.addEventListener('click',resetCatalog);
-    document.querySelectorAll('[data-brand]').forEach(btn=>{const active=btn.dataset.brand===catalogBrand;btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));});
+    document.querySelectorAll('[data-brand]').forEach(btn=>{const active=btn.dataset.brand.toLowerCase()===catalogBrand.toLowerCase();btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));});
     document.querySelectorAll('[data-nav-category]').forEach(a=>a.classList.toggle('active',a.dataset.navCategory===category));
     const tokens = [];
     if(category!=='all')tokens.push(['category',category]);
@@ -193,6 +193,22 @@
     if(!document.querySelector('[data-products]')) return;
     const categorySelect=document.querySelector('[data-category]');
     if(categorySelect) categorySelect.innerHTML='<option value="all">Все категории</option>'+[...new Set(state.products.map(p=>p.category).filter(Boolean))].map(c=>`<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    const brandChips = document.querySelector('.brand-chips');
+    if (brandChips) {
+      const brands = new Map([...brandChips.querySelectorAll('[data-brand]')].map(button => [button.dataset.brand.toLowerCase(), button.dataset.brand]));
+      for (const product of state.products) {
+        const brand = brandOf(product);
+        const key = brand.toLowerCase();
+        if (brands.has(key)) continue;
+        brands.set(key, brand);
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'chip';
+        button.dataset.brand = brand;
+        button.textContent = brand;
+        brandChips.append(button);
+      }
+    }
     function readUrl(){
       const params=new URLSearchParams(location.search);
       catalogBrand=params.get('brand') || 'all';

@@ -56,6 +56,14 @@ model User {
   @@map("users")
 }
 
+model Brand {
+  key         String  @id
+  name        String
+  description String?
+
+  @@map("brands")
+}
+
 model Product {
   id           String   @id @default(uuid())
   name         String

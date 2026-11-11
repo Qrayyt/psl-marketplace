@@ -9,6 +9,8 @@ import {
   importProducts, uploadProductImage, deleteProductImage,
 } from '../controllers/admin/admin-products.controller';
 import { upload } from '../middleware/upload';
+import { env } from '../config/env';
+import { listBrands, createBrand } from '../controllers/admin/admin-brands.controller';
 
 import {
   listUsers, getUser, updateUser,
@@ -41,7 +43,10 @@ router.use(authenticate, requireRole('ADMIN'));
 router.get('/stats', getStats);
 
 // Товары
+router.get('/brands', listBrands);
+router.post('/brands', createBrand);
 router.get('/products', listProducts);
+const productImage = multer({ storage: multer.memoryStorage(), limits: { fileSize: env.upload.maxFileSize, files: 1, fields: 1 } });
 const documentUpload = multer({ storage: multer.memoryStorage(), limits: {
   fileSize: 5 * 1024 * 1024, files: 1, fields: 2,
 } });
@@ -50,9 +55,9 @@ router.post('/products/:id/documents', documentUpload.single('document'), upload
 router.get('/products/:id/documents/:documentId', downloadProductDocument);
 router.put('/products/:id/documents/:documentId', documentUpload.single('document'), replaceProductDocument);
 router.delete('/products/:id/documents/:documentId', deleteProductDocument);
-router.post('/products', createProduct);
+router.post('/products', productImage.single('image'), createProduct);
 router.post('/products/import', importProducts);
-router.patch('/products/:id', updateProduct);
+router.patch('/products/:id', productImage.single('image'), updateProduct);
 router.delete('/products/:id', deleteProduct);
 router.post('/products/:id/restore', restoreProduct);
 router.delete('/products/:id/hard', hardDeleteProduct);

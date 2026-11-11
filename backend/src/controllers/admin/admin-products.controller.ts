@@ -4,7 +4,7 @@ import { prisma } from '../../config/db';
 import { successResponse, paginatedResponse } from '../../utils/apiResponse';
 import { AppError } from '../../utils/AppError';
 import { logAudit } from '../../services/audit.service';
-import { processImage } from '../../services/image.service';
+import { processImage, saveProductCover, removeProductCover } from '../../services/image.service';
 import { invalidateProductsCache } from '../../services/cache.service';
 
 const createProductSchema = z.object({
@@ -63,10 +63,25 @@ export async function listProducts(req: Request, res: Response, next: NextFuncti
   }
 }
 
+function productBody(req: Request): unknown {
+  if (!req.is('multipart/form-data')) return req.body;
+  try {
+    return JSON.parse(req.body.product);
+  } catch {
+    throw new AppError('Не удалось прочитать данные товара', 400);
+  }
+}
+
 export async function createProduct(req: Request, res: Response, next: NextFunction) {
   try {
-    const data = createProductSchema.parse(req.body);
-    const product = await prisma.product.create({ data });
+    const data = createProductSchema.parse(productBody(req));
+    const image = req.file ? await saveProductCover(req.file.buffer) : undefined;
+    const product = await prisma.product.create({
+      data: { ...data, ...(image && { imageUrl: image.url, imageUrls: [image.url], logoOnly: false }) },
+    }).catch(async error => {
+      if (image) await removeProductCover(image.filename);
+      throw error;
+    });
     await invalidateProductsCache();
 
     await logAudit({
@@ -94,7 +109,7 @@ const FIELDS_OWNED_BY_1C = [
 export async function updateProduct(req: Request, res: Response, next: NextFunction) {
   try {
     const id = req.params.id as string;
-    const data = createProductSchema.partial().parse(req.body);
+    const data = createProductSchema.partial().parse(productBody(req));
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) throw new AppError('Товар не найден', 404);
@@ -109,10 +124,18 @@ export async function updateProduct(req: Request, res: Response, next: NextFunct
       }
     }
 
-    const imageUrls = data.imageUrl && data.imageUrl !== existing.imageUrl && existing.imageUrls.length
-      ? [data.imageUrl, ...existing.imageUrls.filter(url => url !== data.imageUrl)]
+    const image = req.file ? await saveProductCover(req.file.buffer) : undefined;
+    const cover = image?.url ?? data.imageUrl;
+    const imageUrls = cover && cover !== existing.imageUrl && (image || existing.imageUrls.length)
+      ? [cover, ...existing.imageUrls.filter(url => url !== cover)]
       : undefined;
-    const product = await prisma.product.update({ where: { id }, data: { ...data, imageUrls } });
+    const product = await prisma.product.update({
+      where: { id },
+      data: { ...data, ...(image && { imageUrl: image.url, logoOnly: false }), imageUrls },
+    }).catch(async error => {
+      if (image) await removeProductCover(image.filename);
+      throw error;
+    });
     await invalidateProductsCache();
 
     await logAudit({

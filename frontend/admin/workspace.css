@@ -20,3 +20,10 @@
 .detail-pairs a { text-decoration: underline; overflow-wrap: anywhere; }
 [data-order-status] { margin-top: 20px; }
 .catalog-document-actions { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+
+.catalog-cover { display: grid; gap: 8px; }
+.catalog-cover img { width: 104px; height: 104px; object-fit: contain; border: 1px solid #e7e7e7; border-radius: 10px; }
+.catalog-cover small { color: #666; }
+.catalog-create-note { margin: 0; padding: 13px 15px; background: #f5f5f5; border-radius: 10px; color: #555; }
+.catalog-brand-dialog { width: min(440px, calc(100% - 32px)); }
+.catalog-brand-dialog .fields { grid-template-columns: 1fr; }
