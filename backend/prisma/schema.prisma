@@ -64,6 +64,14 @@ model Brand {
   @@map("brands")
 }
 
+model ProductGuardex {
+  productId   String  @id @map("product_id")
+  description String?
+  product     Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("product_guardex")
+}
+
 model Product {
   id           String   @id @default(uuid())
   name         String
@@ -91,6 +99,7 @@ model Product {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
+  guardex      ProductGuardex?
   documents    ProductDocument[]
   cartItems    CartItem[]
   favorites    Favorite[]

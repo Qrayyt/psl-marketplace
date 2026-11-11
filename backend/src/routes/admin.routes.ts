@@ -4,7 +4,7 @@ import { Router } from 'express';
 import { authenticate, requireRole } from '../middleware/auth';
 
 import {
-  listProducts, createProduct, updateProduct,
+  listProducts, getAdminProduct, createProduct, updateProduct,
   deleteProduct, restoreProduct, hardDeleteProduct,
   importProducts, uploadProductImage, deleteProductImage,
 } from '../controllers/admin/admin-products.controller';
@@ -46,6 +46,7 @@ router.get('/stats', getStats);
 router.get('/brands', listBrands);
 router.post('/brands', createBrand);
 router.get('/products', listProducts);
+router.get('/products/:id', getAdminProduct);
 const productImage = multer({ storage: multer.memoryStorage(), limits: { fileSize: env.upload.maxFileSize, files: 1, fields: 1 } });
 const documentUpload = multer({ storage: multer.memoryStorage(), limits: {
   fileSize: 5 * 1024 * 1024, files: 1, fields: 2,

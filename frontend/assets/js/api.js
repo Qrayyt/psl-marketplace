@@ -25,7 +25,7 @@
       var url = new URL(value,APP_BASE);
       if(url.username || url.password || url.origin !== APP_BASE.origin || !/^https?:$/.test(url.protocol) || !url.pathname.startsWith(APP_BASE.pathname)) return fallback.href;
       var path=url.pathname.slice(APP_BASE.pathname.length);
-      if(!['','index.html','profile.html','product.html','ai-chat.html','privacy.html','admin/','admin/index.html','admin/legacy.html'].includes(path)) return fallback.href;
+      if(!['','index.html','profile.html','product.html','ai-chat.html','privacy.html','admin/','admin/index.html','admin/product.html','admin/legacy.html'].includes(path)) return fallback.href;
       return url.href;
     }catch(e){return fallback.href;}
   }

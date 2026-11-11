@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="robots" content="noindex">
+  <title>Товар — PSL</title>
+  <link rel="stylesheet" href="workspace.css?v=20261111-3">
+  <link rel="stylesheet" href="product-editor.css?v=20261111-3">
+  <script defer src="../assets/js/api.js?v=20261111-3"></script>
+  <script defer src="catalog.js?v=20261111-3"></script>
+  <script defer src="product-editor.js?v=20261111-3"></script>
+</head>
+<body data-admin-preview>
+  <header class="editor-header">
+    <a class="admin-brand" href="index.html#materials" aria-label="PSL — материалы">
+      <img src="../assets/images/psl-logo.svg" width="88" height="30" alt="PSL">
+      <span>Polymer System<br>Labs</span>
+    </a>
+    <a class="white-button" data-back-materials href="index.html#materials">← К материалам</a>
+  </header>
+  <main class="product-editor" data-product-editor aria-busy="true">
+    <p class="empty">Открываем редактор…</p>
+  </main>
+  <dialog class="admin-dialog catalog-brand-dialog" aria-labelledby="catalog-brand-title"></dialog>
+  <dialog class="admin-dialog editor-photo-dialog" aria-labelledby="editor-photo-title">
+    <div class="dialog-head"><h2 id="editor-photo-title">Картинка товара</h2>
+      <button type="button" data-photo-close aria-label="Закрыть окно">×</button>
+    </div>
+    <div class="editor-dropzone" data-dropzone>
+      <span class="editor-upload-symbol" aria-hidden="true">↑</span>
+      <strong>Перетащите изображение сюда</strong>
+      <small>JPEG, PNG или WebP · до 5 МБ</small>
+      <button type="button" class="black-button" data-photo-choose>Выбрать файл</button>
+      <input type="file" hidden accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" data-photo-input>
+    </div>
+    <p class="dialog-sub" data-photo-message role="status"></p>
+  </dialog>
+</body>
+</html>

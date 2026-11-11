@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
+import { Product } from '@prisma/client';
 import { prisma } from '../../config/db';
 import { successResponse, paginatedResponse } from '../../utils/apiResponse';
 import { AppError } from '../../utils/AppError';
@@ -27,6 +28,24 @@ const createProductSchema = z.object({
   accent: z.string().optional().nullable(),
   imageUrl: z.string().optional().nullable(),
 });
+
+const editorSchema = createProductSchema.extend({
+  guardexDescription: z.string().trim().max(4000).nullable().optional(),
+});
+
+function editorProduct({ guardex, ...product }: Product & { guardex: { description: string | null } | null }) {
+  return { ...product, guardexDescription: guardex?.description ?? null };
+}
+
+export async function getAdminProduct(req: Request, res: Response, next: NextFunction) {
+  try {
+    const product = await prisma.product.findUnique({ where: { id: req.params.id as string }, include: { guardex: true } });
+    if (!product) throw new AppError('Товар не найден', 404);
+    successResponse(res, editorProduct(product));
+  } catch (error) {
+    next(error);
+  }
+}
 
 export async function listProducts(req: Request, res: Response, next: NextFunction) {
   try {
@@ -74,10 +93,15 @@ function productBody(req: Request): unknown {
 
 export async function createProduct(req: Request, res: Response, next: NextFunction) {
   try {
-    const data = createProductSchema.parse(productBody(req));
+    const { guardexDescription, ...data } = editorSchema.parse(productBody(req));
     const image = req.file ? await saveProductCover(req.file.buffer) : undefined;
     const product = await prisma.product.create({
-      data: { ...data, ...(image && { imageUrl: image.url, imageUrls: [image.url], logoOnly: false }) },
+      data: {
+        ...data,
+        ...(image && { imageUrl: image.url, imageUrls: [image.url], logoOnly: false }),
+        guardex: guardexDescription ? { create: { description: guardexDescription } } : undefined,
+      },
+      include: { guardex: true },
     }).catch(async error => {
       if (image) await removeProductCover(image.filename);
       throw error;
@@ -93,7 +117,7 @@ export async function createProduct(req: Request, res: Response, next: NextFunct
       ip: req.ip,
     });
 
-    successResponse(res, product, 201);
+    successResponse(res, editorProduct(product), 201);
   } catch (err) {
     next(err);
   }
@@ -109,7 +133,7 @@ const FIELDS_OWNED_BY_1C = [
 export async function updateProduct(req: Request, res: Response, next: NextFunction) {
   try {
     const id = req.params.id as string;
-    const data = createProductSchema.partial().parse(productBody(req));
+    const { guardexDescription, ...data } = editorSchema.partial().parse(productBody(req));
 
     const existing = await prisma.product.findUnique({ where: { id } });
     if (!existing) throw new AppError('Товар не найден', 404);
@@ -131,7 +155,16 @@ export async function updateProduct(req: Request, res: Response, next: NextFunct
       : undefined;
     const product = await prisma.product.update({
       where: { id },
-      data: { ...data, ...(image && { imageUrl: image.url, logoOnly: false }), imageUrls },
+      data: {
+        ...data,
+        ...(image && { imageUrl: image.url, logoOnly: false }),
+        imageUrls,
+        guardex: guardexDescription === undefined ? undefined : { upsert: {
+          create: { description: guardexDescription },
+          update: { description: guardexDescription },
+        } },
+      },
+      include: { guardex: true },
     }).catch(async error => {
       if (image) await removeProductCover(image.filename);
       throw error;
@@ -147,7 +180,7 @@ export async function updateProduct(req: Request, res: Response, next: NextFunct
       ip: req.ip,
     });
 
-    successResponse(res, product);
+    successResponse(res, editorProduct(product));
   } catch (err) {
     next(err);
   }
