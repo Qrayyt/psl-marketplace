@@ -53,6 +53,8 @@ export async function listProducts(req: Request, res: Response, next: NextFuncti
     const limit = Math.min(100, Math.max(1, parseInt(req.query.limit as string) || 20));
     const skip = (page - 1) * limit;
     const search = req.query.search as string | undefined;
+    const name = typeof req.query.name === 'string' ? req.query.name.trim() : '';
+    const brand = typeof req.query.brand === 'string' ? req.query.brand.trim() : '';
     const category = req.query.category as string | undefined;
     const isActive = req.query.is_active !== undefined
       ? req.query.is_active === 'true'
@@ -68,6 +70,8 @@ export async function listProducts(req: Request, res: Response, next: NextFuncti
         { category: { contains: search, mode: 'insensitive' } },
       ];
     }
+    if (name) where.name = { contains: name, mode: 'insensitive' };
+    if (brand) where.brand = { equals: brand, mode: 'insensitive' };
     if (category) where.category = category;
     if (isActive !== undefined) where.isActive = isActive;
 

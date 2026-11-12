@@ -24,6 +24,22 @@
 .catalog-brand-dialog { width: min(440px, calc(100% - 32px)); }
 .catalog-brand-dialog .fields { grid-template-columns: 1fr; }
 
+.catalog-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 360px) minmax(0, 220px) auto;
+  gap: 12px;
+  align-items: end;
+  justify-content: start;
+  margin-bottom: 16px;
+}
+.catalog-filters > .white-button { min-height: 40px; }
+.catalog-filter-error { grid-column: 1 / -1; color: #626262; font-size: 13px; }
+.catalog-filter-error button { margin-left: 4px; }
+@media (max-width: 600px) {
+  .catalog-filters { grid-template-columns: minmax(0, 1fr) auto; justify-content: stretch; }
+  .catalog-filters > .field:first-child { grid-column: 1 / -1; }
+}
+
 .catalog-list { overflow: hidden; }
 .catalog-pagination {
   display: flex;

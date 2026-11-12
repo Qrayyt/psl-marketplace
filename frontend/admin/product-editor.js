@@ -15,7 +15,13 @@
   }
   const params = new URLSearchParams(location.search);
   const page = Number(params.get('page'));
-  const back = '/admin/materials/' + (Number.isSafeInteger(page) && page > 1 ? '?page=' + page : '');
+  const backParams = new URLSearchParams();
+  if (Number.isSafeInteger(page) && page > 1) backParams.set('page', page);
+  for (const key of ['name', 'brand']) {
+    const value = params.get(key);
+    if (value) backParams.set(key, value);
+  }
+  const back = '/admin/materials/' + (backParams.size ? '?' + backParams : '');
   document.querySelector('[data-back-materials]').href = back;
   let id = params.get('id');
   let file;
