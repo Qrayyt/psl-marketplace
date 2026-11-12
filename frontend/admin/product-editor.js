@@ -10,9 +10,12 @@
   const photoInput = photoDialog.querySelector('[data-photo-input]');
   const dropzone = photoDialog.querySelector('[data-dropzone]');
   const photoMessage = photoDialog.querySelector('[data-photo-message]');
+  if (location.pathname !== '/admin/product/') {
+    history.replaceState(history.state, '', '/admin/product/' + location.search + location.hash);
+  }
   const params = new URLSearchParams(location.search);
   const page = Number(params.get('page'));
-  const back = 'index.html' + (Number.isSafeInteger(page) && page > 1 ? '?page=' + page : '') + '#materials';
+  const back = '/admin/materials/' + (Number.isSafeInteger(page) && page > 1 ? '?page=' + page : '');
   document.querySelector('[data-back-materials]').href = back;
   let id = params.get('id');
   let file;

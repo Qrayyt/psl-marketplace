@@ -8,7 +8,7 @@
   const path = id => base + '/' + encodeURIComponent(id);
   const imageUrl = item => {
     const image = item.imageUrl || item.imageUrls?.[0] || '';
-    if (image.startsWith('assets/')) return '../' + image;
+    if (image.startsWith('assets/')) return '/' + image;
     return /^(?:https?:\/\/|\/[^/\\])/i.test(image) ? image : '';
   };
 
@@ -52,7 +52,7 @@
 
   function productRow(product){
     const url = imageUrl(product);
-    const target = 'product.html?' + new URLSearchParams({id: product.id, page});
+    const target = '/admin/product/?' + new URLSearchParams({id: product.id, page});
     return `<article class="catalog-list-item">
       <a class="catalog-list-photo" href="${escape(target)}" aria-label="${escape(product.name)}">
         <span aria-hidden="true">Без фото</span>
