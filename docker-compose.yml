@@ -18,6 +18,8 @@ services:
       - "3030:3000"
     env_file:
       - ./backend/.env
+    volumes:
+      - ${PSL_HANDBOOK_HOST_DIR:-/var/lib/psl/handbook}:/var/lib/psl/handbook:ro
     depends_on:
       postgres:
         condition: service_healthy

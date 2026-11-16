@@ -45,6 +45,7 @@ model User {
   phone         String?
   role          Role     @default(USER)
   isBlocked     Boolean  @default(false) @map("is_blocked")
+  handbookAccess Boolean @default(false) @map("handbook_access")
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
