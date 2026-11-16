@@ -5,9 +5,23 @@
   document.querySelectorAll('[data-icon]').forEach(el=>el.innerHTML=icon(el.dataset.icon));
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   const catalog=window.PSLChatCatalog, format=window.PSLChatFormat,input=document.querySelector('#message'),form=document.querySelector('.composer'),thread=document.querySelector('.thread'),scroller=document.querySelector('#conversation'),welcome=document.querySelector('.welcome'),history=document.querySelector('.history'),send=document.querySelector('.send'),toggle=document.querySelector('.visual-toggle'),search=document.querySelector('.history-search input'),sidebar=document.querySelector('.sidebar'),dialog=document.querySelector('.info-dialog');
-  const key='psl_assistant_chats_v1',uid=()=>crypto.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);
+  const API=window.PSL_API,handoffDialog=document.querySelector('.handoff-dialog');
+  const handoffForm=document.querySelector('[data-handoff-form]'),handoffStatus=document.querySelector('[data-handoff-status]');
+  const handoffButton=document.querySelector('[data-handoff-submit]');
+  let transferring=false, handoffDraft;
+  const supportLink=id=>'/dialogs/?id='+encodeURIComponent(id);
+  const owner=()=>API.getUser()?.id;
+  const linked=chat=>chat?.handoff?.owner===owner() && chat?.handoff?.id;
+  const anonymousKey='psl_assistant_chats_v1',key=owner()?anonymousKey+':'+owner():anonymousKey,uid=()=>crypto.randomUUID?.()||Date.now().toString(36)+Math.random().toString(36).slice(2);
   let chats=[],current=null,visual=true,busy=false,pending=null,toastTimer,filter='';
-  try{const parsed=JSON.parse(localStorage.getItem(key));if(Array.isArray(parsed))chats=parsed.filter(c=>c&&typeof c.id==='string'&&typeof c.title==='string'&&Array.isArray(c.messages)).slice(0,40).map(c=>({...c,messages:c.messages.filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.text==='string').slice(-100)}));}catch{}
+  function storedChats(storageKey){
+    try{
+      const parsed=JSON.parse(localStorage.getItem(storageKey));
+      if(Array.isArray(parsed))return parsed.filter(c=>c&&typeof c.id==='string'&&typeof c.title==='string'&&Array.isArray(c.messages)).slice(0,40).map(c=>({...c,messages:c.messages.filter(m=>m&&['user','assistant'].includes(m.role)&&typeof m.text==='string').slice(-100)}));
+    }catch{}
+    return [];
+  }
+  chats=storedChats(key);
   const product=id=>(window.PRODUCTS||[]).find(p=>p.id===id||p.catalogSlug===id);
   const href=id=>'product.html?id='+encodeURIComponent(id);
   function imageUrl(value){try{const u=new URL(value,location.href);return u.origin===location.origin&&/^https?:$/.test(u.protocol)?u.href:'assets/images/psl-logo.svg';}catch{return 'assets/images/psl-logo.svg';}}
@@ -34,7 +48,7 @@
   function updateJump(){document.querySelector('.jump').hidden=scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<160;}
   function updateInput(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,145)+'px';send.disabled=!input.value.trim()&&!busy;send.setAttribute('aria-label',busy?'Остановить ответ':'Отправить сообщение');send.innerHTML=busy?'<span style="width:10px;height:10px;background:currentColor;border-radius:2px"></span>':icon('up');}
   function cancel(){clearTimeout(pending);pending=null;busy=false;updateInput();}
-  function openChat(id){cancel();current=id;render();if(innerWidth<=760)setSidebar(false);bottom();}
+  function openChat(id){cancel();current=id;const target=linked(active());if(target){location.assign(supportLink(target));return;}render();if(innerWidth<=760)setSidebar(false);bottom();}
   function newChat(){cancel();current=null;filter='';search.value='';input.value='';updateInput();render();if(innerWidth<=760)setSidebar(false);input.focus();}
   function setSidebar(open){const mobile=innerWidth<=760;if(mobile){document.body.classList.toggle('sidebar-open',open);sidebar.inert=!open;}else{document.body.classList.toggle('sidebar-closed',!open);sidebar.inert=!open;}document.querySelector('.open-sidebar').setAttribute('aria-expanded',String(open));}
   function answer(chat, text, prior, visualEnabled){
@@ -46,6 +60,12 @@
     const timer = setTimeout(async () => {
       await window.PSL_PRODUCTS_READY;
       if (current !== id || pending !== timer) return;
+      if (/(?:позови|позовите|позвать|подключи|подключите|пригласи|вызови|нуж(?:ен|но)|хочу|дайте|соедини|соедините|свяжи|свяжите).{0,45}(?:менеджер|оператор|специалист|консультант|человек)|(?:как|можно).{0,30}(?:связаться|поговорить).{0,25}(?:менеджер|оператор|специалист|консультант)/i.test(text)) {
+        cancel();
+        render();
+        openHandoff();
+        return;
+      }
       const result = catalog.reply(text, prior);
       const ids = [...new Set((result.blocks || []).flatMap(block => block.ids || []))];
       chat.messages.push({
@@ -63,12 +83,63 @@
     }, 250);
     pending = timer;
   }
-  function submit(text){text=String(text||'').trim().slice(0,4000);if(!text||busy)return;let chat=active();if(!chat){chat={id:uid(),title:text.slice(0,52),updated:Date.now(),messages:[]};chats.unshift(chat);chats=chats.slice(0,40);current=chat.id;}if(chat.messages.length>=100){toast('Этот чат заполнен. Создайте новый диалог.');return;}const prior=[...chat.messages];chat.messages.push({role:'user',text});chat.updated=Date.now();chats=[chat,...chats.filter(c=>c.id!==chat.id)];input.value='';updateInput();save();answer(chat,text,prior,visual);}
+  function submit(text){text=String(text||'').trim().slice(0,4000);if(!text||busy||handoffDialog.open)return;let chat=active();if(linked(chat)){location.assign(supportLink(linked(chat)));return;}if(!chat){chat={id:uid(),title:text.slice(0,52),updated:Date.now(),messages:[]};chats.unshift(chat);chats=chats.slice(0,40);current=chat.id;}if(chat.messages.length>=100){toast('Этот чат заполнен. Создайте новый диалог.');return;}const prior=[...chat.messages];chat.messages.push({role:'user',text});chat.updated=Date.now();chats=[chat,...chats.filter(c=>c.id!==chat.id)];input.value='';updateInput();save();answer(chat,text,prior,visual);}
+  function openHandoff(){
+    const chat=active();
+    if(linked(chat)){location.assign(supportLink(linked(chat)));return;}
+    if(handoffDialog.open)return;
+    const user=API.getUser();
+    handoffStatus.textContent='';
+    handoffButton.textContent=user&&!user.isDemo?'Позвать менеджера':'Войти и продолжить';
+    handoffDialog.showModal();
+  }
+
+  handoffForm.addEventListener('submit',async event=>{
+    event.preventDefault();
+    if(transferring)return;
+    const user=API.getUser(),chat=active();
+    if(!user||user.isDemo){
+      const back=new URL(location.href);
+      back.searchParams.set('handoff',chat?.id||'new');
+      if(chat)sessionStorage.setItem('psl_handoff_source',JSON.stringify({key,id:chat.id}));
+      location.assign(API.authUrl('login',back.href));
+      return;
+    }
+    cancel();
+    transferring=true;
+    handoffButton.disabled=true;
+    handoffStatus.textContent='Передаём переписку…';
+    const previous=chat?.handoffRequest?.owner===user.id?chat.handoffRequest:handoffDraft;
+    const id=previous?.owner===user.id?previous.id:crypto.randomUUID();
+    if(chat){chat.handoffRequest={id,owner:user.id};save();}
+    else handoffDraft={id,owner:user.id};
+    const messages=(chat?.messages||[]).filter(message=>message.text.trim())
+      .slice(-40).map(message=>({author:message.role==='user'?'CUSTOMER':'GUARDEX',body:message.text.slice(0,4000)}));
+    try {
+      const response=await API.fetch('/api/support/cases',{
+        method:'POST',body:JSON.stringify({id,messages}),signal:AbortSignal.timeout(20000),
+      });
+      const result=await response.json();
+      if(!response.ok||!result.success)throw Error(result.error?.message||'Не удалось подключить менеджера.');
+      if(chat){chat.handoff={id,owner:user.id};save();}
+      location.assign(supportLink(id));
+    }catch(error){
+      handoffStatus.textContent=error.message;
+    }finally{
+      transferring=false;
+      handoffButton.disabled=false;
+    }
+  });
+
+  handoffDialog.addEventListener('cancel',event=>{if(transferring)event.preventDefault();});
+
   form.addEventListener('submit',e=>{e.preventDefault();if(busy){cancel();render();save();toast('Ответ остановлен');return;}submit(input.value);});
   input.addEventListener('input',updateInput);input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&innerWidth>760){e.preventDefault();if(!busy)submit(input.value);}});
   toggle.addEventListener('click',()=>{visual=!visual;toggle.setAttribute('aria-pressed',String(visual));toggle.querySelector('span').textContent=visual?'Вкл.':'Выкл.';});
   search.addEventListener('input',()=>{filter=search.value.trim().toLowerCase();renderHistory();});
   document.addEventListener('click',async e=>{const el=e.target.closest('button');if(!el)return;
+    if(el.hasAttribute('data-handoff'))openHandoff();
+    if(el.hasAttribute('data-handoff-cancel')&&!transferring)handoffDialog.close();
     if(el.hasAttribute('data-new'))newChat();
     if(el.hasAttribute('data-sidebar'))setSidebar(innerWidth<=760?!document.body.classList.contains('sidebar-open'):document.body.classList.contains('sidebar-closed'));
     if(el.hasAttribute('data-info'))dialog.showModal();
@@ -78,16 +149,34 @@
     if(el.dataset.prompt){if(innerWidth<=760)setSidebar(false);submit(el.dataset.prompt);}
     if(el.hasAttribute('data-copy')){const m=active()?.messages[Number(el.dataset.copy)];if(m)try{await navigator.clipboard.writeText(m.text);toast('Ответ скопирован');}catch{toast('Не удалось скопировать. Выделите текст ответа.');}}
     if(el.hasAttribute('data-like')){const m=active()?.messages[Number(el.dataset.like)];if(m){m.liked=!m.liked;el.classList.toggle('selected',m.liked);el.setAttribute('aria-pressed',String(m.liked));save();toast(m.liked?'Отметка сохранена в этом браузере':'Отметка снята');}}
-    if(el.hasAttribute('data-retry')&&!busy){const chat=active(),index=Number(el.dataset.retry),prior=chat?.messages.slice(0,index);const question=[...(prior||[])].reverse().find(m=>m.role==='user');if(question){chat.messages=prior;save();answer(chat,question.text,prior,visual);}}
+    if(el.hasAttribute('data-retry')&&!busy&&!linked(active())){const chat=active(),index=Number(el.dataset.retry),prior=chat?.messages.slice(0,index);const question=[...(prior||[])].reverse().find(m=>m.role==='user');if(question){chat.messages=prior;save();answer(chat,question.text,prior,visual);}}
     if(el.classList.contains('jump'))bottom();
   });
   let undo=null;
-  document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();newChat();}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'&&undo&&!['INPUT','TEXTAREA'].includes(e.target.tagName)){e.preventDefault();chats.splice(undo.index,0,undo.chat);undo=null;save();render();toast('Чат восстановлен');}if(e.key==='Escape'&&innerWidth<=760)setSidebar(false);});
+  document.addEventListener('keydown',e=>{if(!handoffDialog.open&&(e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();newChat();}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'&&undo&&!['INPUT','TEXTAREA'].includes(e.target.tagName)){e.preventDefault();chats.splice(undo.index,0,undo.chat);undo=null;save();render();toast('Чат восстановлен');}if(e.key==='Escape'&&innerWidth<=760)setSidebar(false);});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
   scroller.addEventListener('scroll',updateJump,{passive:true});
   let mobile=innerWidth<=760;window.addEventListener('resize',()=>{if(mobile!==(innerWidth<=760)){mobile=innerWidth<=760;document.body.classList.remove('sidebar-open','sidebar-closed');sidebar.inert=mobile;}updateJump();});
   sidebar.inert=mobile;
   (window.PSL_PRODUCTS_READY || Promise.resolve()).then(() => {
+    const url=new URL(location.href);
+    const handoff=url.searchParams.get('handoff');
+    if(handoff&&API.getUser()&&!API.getUser().isDemo){
+      url.searchParams.delete('handoff');
+      window.history.replaceState(null,'',url);
+      if(!chats.some(chat=>chat.id===handoff)){
+        try{
+          const source=JSON.parse(sessionStorage.getItem('psl_handoff_source'));
+          if(source?.id===handoff&&(source.key===anonymousKey||source.key===anonymousKey+':demo-1'||source.key===anonymousKey+':demo-2')){
+            const chat=storedChats(source.key).find(chat=>chat.id===handoff);
+            if(chat){chats.unshift(chat);save();}
+          }
+        }catch{}
+      }
+      sessionStorage.removeItem('psl_handoff_source');
+      current=chats.find(chat=>chat.id===handoff)?.id||null;
+      openHandoff();
+    }
     render();
     updateInput();
   });

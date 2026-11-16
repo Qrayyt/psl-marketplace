@@ -9,6 +9,7 @@ datasource db {
 
 enum Role {
   USER
+  MANAGER
   ADMIN
 }
 
@@ -52,6 +53,10 @@ model User {
   orders        Order[]
   addresses     DeliveryAddress[]
   auditLogs     AuditLog[]
+  supportCases  SupportCase[] @relation("SupportCustomer")
+  assignedCases SupportCase[] @relation("SupportManager")
+  clientNotes   ClientNote[] @relation("NoteCustomer")
+  writtenNotes  ClientNote[] @relation("NoteManager")
 
   @@map("users")
 }
@@ -293,4 +298,74 @@ model ProductDocument {
 
   @@index([productId, createdAt])
   @@map("product_documents")
+}
+
+
+enum SupportStatus {
+  WAITING
+  ACTIVE
+  CLOSED
+}
+
+enum SupportAuthor {
+  CUSTOMER
+  GUARDEX
+  MANAGER
+}
+
+enum NoteStatus {
+  PENDING
+  ACCEPTED
+  DISMISSED
+}
+
+model SupportCase {
+  id         String        @id @default(uuid())
+  customerId String        @map("customer_id")
+  managerId  String?       @map("manager_id")
+  status     SupportStatus @default(WAITING)
+  summary    String
+  generated  Boolean       @default(false)
+  createdAt  DateTime      @default(now()) @map("created_at")
+  updatedAt  DateTime      @updatedAt @map("updated_at")
+  customer   User          @relation("SupportCustomer", fields: [customerId], references: [id], onDelete: Cascade)
+  manager    User?         @relation("SupportManager", fields: [managerId], references: [id], onDelete: SetNull)
+  messages   SupportMessage[]
+
+  @@index([status, updatedAt])
+  @@index([customerId, updatedAt])
+  @@index([managerId, updatedAt])
+  @@map("support_cases")
+}
+
+model SupportMessage {
+  id           Int           @id @default(autoincrement())
+  caseId       String        @map("case_id")
+  author       SupportAuthor
+  body         String
+  clientKey    String?       @map("client_key")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  conversation SupportCase   @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  note         ClientNote?
+
+  @@unique([caseId, clientKey])
+  @@index([caseId, id])
+  @@map("support_messages")
+}
+
+model ClientNote {
+  id         String         @id @default(uuid())
+  customerId String         @map("customer_id")
+  managerId  String?        @map("manager_id")
+  messageId  Int            @unique @map("message_id")
+  body       String
+  generated  Boolean        @default(false)
+  status     NoteStatus     @default(PENDING)
+  createdAt  DateTime       @default(now()) @map("created_at")
+  customer   User           @relation("NoteCustomer", fields: [customerId], references: [id], onDelete: Cascade)
+  manager    User?          @relation("NoteManager", fields: [managerId], references: [id], onDelete: SetNull)
+  message    SupportMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([customerId, status, createdAt])
+  @@map("client_notes")
 }

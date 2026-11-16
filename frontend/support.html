@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Чат с менеджером — PSL</title>
+  <link rel="stylesheet" href="/assets/css/support.css?v=1">
+  <script defer src="/assets/js/api.js?v=20261116-1"></script>
+  <script defer src="/assets/js/support.js?v=1"></script>
+</head>
+<body data-admin-preview data-support-mode="customer">
+  <header class="support-header">
+    <a class="brand" href="/ai-chat.html"><img src="/assets/images/psl-logo.svg" width="62" height="28" alt="PSL"></a>
+    <nav aria-label="Навигация"><a href="/ai-chat.html">К Guardex ↗</a></nav>
+  </header>
+  <main class="support-main">
+    <div class="page-top">
+      <div><a class="back-link" href="/dialogs/" data-queue-link hidden>← Все диалоги</a><h1>Чат с менеджером</h1></div>
+      <span class="status-chip" data-status hidden></span>
+    </div>
+    <p class="feedback" role="status" data-feedback>Загружаем…</p>
+    <section data-queue hidden aria-label="Диалоги"></section>
+    <div class="support-layout" data-room hidden>
+      <aside class="case-panel" data-client hidden aria-label="Профиль клиента">
+        <div data-profile></div>
+        <section data-suggestions aria-label="Предложения для профиля"></section>
+        <section data-notes aria-label="Заметки клиента"></section>
+      </aside>
+      <section class="room" aria-label="Переписка">
+        <div class="room-bar" data-room-bar></div>
+        <div class="transcript" data-transcript role="log" aria-label="Сообщения" tabindex="0"></div>
+        <form class="compose" data-compose hidden>
+          <label class="sr-only" for="support-message">Сообщение</label>
+          <textarea id="support-message" name="message" rows="2" maxlength="4000" placeholder="Напишите сообщение…" required></textarea>
+          <button class="primary" type="submit">Отправить</button>
+        </form>
+      </section>
+    </div>
+  </main>
+
+</body>
+</html>

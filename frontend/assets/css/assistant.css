@@ -24,3 +24,33 @@
 .answer-text code { padding: 2px 5px; border-radius: 4px; background: #f1f1f1; font-size: .9em; }
 .guardex-card-price { display: block; margin-top: 8px; color: #292929; font-size: 13px; }
 .visual-heading { color: #414141; font-weight: 600; }
+
+.manager-trigger {
+  padding:7px 11px;
+  border:1px solid #ddd;
+  border-radius:9px;
+  background:#fff;
+  color:#181818;
+  font:inherit;
+  font-size:13px;
+  white-space:nowrap;
+  cursor:pointer;
+}
+.manager-trigger:hover { background:#f4f4f4; }
+.handoff-dialog {
+  color:#171717;
+  width:min(440px,calc(100% - 32px));
+  border:1px solid #ddd;
+  border-radius:16px;
+  padding:22px;
+}
+.handoff-dialog::backdrop { background:#0006; }
+.handoff-dialog h2 { font-size:20px; margin:0 0 12px; }
+.handoff-dialog p { margin:0 0 12px; line-height:1.5; }
+.handoff-dialog [data-handoff-status]:empty { display:none; }
+.handoff-dialog form { display:flex; justify-content:flex-end; flex-wrap:wrap; gap:8px; }
+.handoff-dialog [data-handoff-cancel] {
+  font:inherit; padding:8px 12px; background:#fff; border:1px solid #ddd;
+  border-radius:9px; cursor:pointer;
+}
+@media(max-width:450px) { .topbar-right .back-catalog { display:none; } }

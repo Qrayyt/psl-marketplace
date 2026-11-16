@@ -22,6 +22,7 @@ import favoritesRoutes from './routes/favorites.routes';
 import addressesRoutes from './routes/addresses.routes';
 import ordersRoutes from './routes/orders.routes';
 import adminRoutes from './routes/admin.routes';
+import supportRoutes from './routes/support.routes';
 import onecRoutes from './routes/onec.routes';
 import { csrfProtection } from './middleware/csrf';
 
@@ -87,6 +88,7 @@ app.use('/api/favorites', favoritesRoutes);
 app.use('/api/addresses', addressesRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/support', supportRoutes);
 
 // Error handling (must be last)
 app.use(errorHandler);
