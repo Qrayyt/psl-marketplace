@@ -336,7 +336,7 @@
     const api = window.PSL_API;
     const productPath = '/api/products/' + encodeURIComponent(id);
     const endpoint = (api?.baseUrl || '') + productPath + '/documents';
-    loadArchivedTechnicalSheets(root, (api?.baseUrl || '') + productPath + '/handbook-documents');
+    loadArchivedTechnicalSheets(section, (api?.baseUrl || '') + productPath + '/handbook-documents');
     try {
       const response = await fetch(endpoint, {signal: AbortSignal.timeout(5000)});
       if(!response.ok) return;
@@ -352,15 +352,14 @@
     }
   }
 
-  async function loadArchivedTechnicalSheets(root, endpoint){
+  async function loadArchivedTechnicalSheets(section, endpoint){
     try {
       const response = await fetch(endpoint, {signal: AbortSignal.timeout(5000)});
       if(!response.ok) return;
       const {data} = await response.json();
-      const section = root.querySelector('[data-product-documents]');
-      if(!section?.isConnected || !data.length) return;
+      if(!section?.isConnected || !Array.isArray(data) || !data.length) return;
       const archive = document.createElement('div');
-      archive.className = 'option-block';
+      archive.className = 'option-block archived-technical-sheets';
       const title = document.createElement('div');
       title.className = 'option-label';
       title.textContent = 'Архивные техкарты';

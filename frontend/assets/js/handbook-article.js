@@ -5,12 +5,25 @@
   const content = document.querySelector('#content');
   if (!Object.hasOwn(articles, id)) {
     title.textContent = 'Статья не найдена';
+    document.title = title.textContent + ' — Справочник PSL';
+    link(content, 'Вернуться к списку материалов', '/handbook/');
     return;
   }
   const article = articles[id];
   document.title = article.title + ' — Справочник PSL';
   title.textContent = article.title;
-  if (!article.listing) document.querySelector('#section').textContent = ' / ' + article.section;
+  const filters = {
+    'Системы решений': 'systems',
+    'Отрасли применения': 'industries',
+    'Работа с партнёрами': 'partners',
+  };
+  if (!article.listing && filters[article.section]) {
+    const section = document.querySelector('#section');
+    section.textContent = article.section;
+    section.href = '/handbook/?section=' + filters[article.section];
+    section.hidden = false;
+    document.querySelector('#section-delimiter').hidden = false;
+  }
 
   function append(parent, tag, text) {
     const node = document.createElement(tag);

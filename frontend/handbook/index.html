@@ -4,36 +4,40 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Справочник PSL</title>
-  <link rel="stylesheet" href="/assets/css/handbook.css?v=5">
+  <link rel="stylesheet" href="/assets/css/handbook.css?v=6">
   <script defer src="/assets/js/handbook-articles.js?v=1"></script>
-  <script defer src="/assets/js/handbook.js?v=5"></script>
+  <script defer src="/assets/js/handbook.js?v=6"></script>
 </head>
 <body>
   <header class="bar">
     <a href="/" aria-label="PSL Marketplace"><img src="/assets/images/psl-logo.svg" width="62" height="28" alt="PSL"></a>
-    <a href="/">Каталог PSL ↗</a>
+    <a href="/">Каталог PSL</a>
   </header>
   <main>
     <h1>Справочник PSL</h1>
     <p id="status" role="status">Загружаем материалы…</p>
+    <button id="retry" type="button" hidden>Повторить загрузку</button>
     <div id="archive" hidden>
       <p class="intro">Системы, области применения и материалы для партнёров. Техкарты доступны в карточках <a href="/">каталога</a>.</p>
       <div class="layout">
         <nav aria-label="Разделы справочника">
           <button type="button" data-section="" aria-pressed="true">Все материалы</button>
-          <button type="button" data-section="Системы решений" aria-pressed="false">Системы решений</button>
-          <button type="button" data-section="Отрасли применения" aria-pressed="false">Отрасли применения</button>
-          <button type="button" data-section="Работа с партнёрами" aria-pressed="false">Работа с партнёрами</button>
-          <button type="button" data-section="Архив сертификатов" aria-pressed="false">Сертификаты</button>
+          <button type="button" data-section="Системы решений" data-filter="systems" aria-pressed="false">Системы решений</button>
+          <button type="button" data-section="Отрасли применения" data-filter="industries" aria-pressed="false">Отрасли применения</button>
+          <button type="button" data-section="Работа с партнёрами" data-filter="partners" aria-pressed="false">Работа с партнёрами</button>
+          <button type="button" data-section="Архив сертификатов" data-filter="certificates" aria-pressed="false">Сертификаты</button>
         </nav>
         <section aria-label="Материалы">
-          <label for="search">Поиск по названию</label>
-          <input type="search" id="search" placeholder="Например, парковки">
+          <label for="search">Поиск по справочнику</label>
+          <input type="search" id="search" aria-describedby="search-hint" placeholder="Например, парковки">
+          <p id="search-hint" class="search-hint">По тексту статей и названиям PDF</p>
           <p class="count" id="count" role="status"></p>
+          <button id="reset" type="button" hidden>Сбросить поиск и фильтры</button>
           <ul id="documents"></ul>
         </section>
       </div>
     </div>
+    <noscript>Для поиска и просмотра списка материалов включите JavaScript.</noscript>
   </main>
 </body>
 </html>

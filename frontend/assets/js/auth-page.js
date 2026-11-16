@@ -8,7 +8,10 @@
   const icon=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${paths[k]}</svg>`;
   const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let mode=known.includes(params.get('mode'))?params.get('mode'):'login',controller=null,emailDraft='',busy=false,transitionId=0;
-  const back=document.querySelector('[data-back]');back.href=returnTo;
+  const back=document.querySelector('[data-back]');
+  const destination=new URL(returnTo);
+  const requiresLogin=/(?:^|\/)(?:admin(?:\/|$)|dialogs\/?$|support\.html$)/.test(destination.pathname);
+  back.href=requiresLogin?'index.html':returnTo;
   document.querySelector('[data-year]').textContent=new Date().getFullYear();
   function field(name,label,type,ico,extra=''){
     return `<label class="auth-field"><span class="visually-hidden">${label}</span><span class="field-icon">${icon(ico)}</span><input type="${type}" name="${name}" placeholder="${label}" aria-label="${label}" ${extra}>${type==='password'?`<button class="password-toggle" type="button" data-password="${name}" aria-label="Показать ${name==='confirm'?'повтор пароля':'пароль'}" aria-pressed="false">${icon('eyeOff')}</button>`:''}</label>`;

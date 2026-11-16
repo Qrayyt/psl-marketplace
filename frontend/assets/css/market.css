@@ -18,3 +18,6 @@ body:not(.market-home) .market-header{width:100%}body:not(.market-home) .contain
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}.opening{display:none}.opening-active{overflow:auto}.market-grid .product-card:hover{transform:none}}
 .stat:last-child .stat-num{font-size:12px!important;line-height:1.4;overflow-wrap:normal;letter-spacing:0;white-space:normal}.thumb-small img{object-fit:contain!important;}
 .detail-card .option-label{color:#777!important;font-size:10px}.detail-card .primary-btn{background:#111!important;color:#fff!important;border-color:#111!important}.detail-card .detail-list li{border-color:#eee}
+
+.market-home .market-actions > a:first-child{display:grid}
+.archived-technical-sheets .source-link{overflow-wrap:anywhere}
