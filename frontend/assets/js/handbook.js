@@ -6,7 +6,6 @@
   const search = document.querySelector('#search');
   const count = document.querySelector('#count');
   const buttons = [...document.querySelectorAll('[data-section]')];
-  const sections = { technical: 'Техкарта', certificates: 'Сертификат' };
   let documents = [];
   let section = '';
 
@@ -35,8 +34,8 @@
   function render() {
     const query = search.value.trim().toLocaleLowerCase('ru').split(/\s+/);
     const visible = documents.filter(item => (!section || item.section === section)
-      && query.every(term => (item.title + ' ' + item.filename).toLocaleLowerCase('ru').includes(term)));
-    count.textContent = visible.length ? 'Документов: ' + visible.length : 'Документы не найдены';
+      && query.every(term => (item.title + ' ' + (item.filename || '')).toLocaleLowerCase('ru').includes(term)));
+    count.textContent = visible.length ? 'Материалов: ' + visible.length : 'Материалы не найдены';
     list.replaceChildren(...visible.map(item => {
       const row = document.createElement('li');
       const info = document.createElement('div');
@@ -44,7 +43,18 @@
       const detail = document.createElement('small');
       const button = document.createElement('button');
       title.textContent = item.title;
-      detail.textContent = sections[item.section] + ' · ' + item.pages + ' стр. · ' + item.filename;
+      if (item.source) {
+        const link = document.createElement('a');
+        link.href = item.source;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.textContent = 'Открыть в старом справочнике ↗';
+        detail.textContent = item.section;
+        info.append(title, detail);
+        row.append(info, link);
+        return row;
+      }
+      detail.textContent = item.section + ' · ' + item.pages + ' стр. · ' + item.filename;
       button.type = 'button';
       button.textContent = 'Скачать PDF ↓';
       button.setAttribute('aria-label', 'Скачать PDF: ' + item.title + ' — ' + item.filename);
@@ -77,7 +87,8 @@
       return;
     }
     if (!response.ok) throw new Error('Справочник временно недоступен. Попробуйте позже.');
-    documents = (await response.json()).data;
+    const data = (await response.json()).data;
+    documents = [...data.articles, ...data.documents.map(item => ({ ...item, section: 'Архив сертификатов' }))];
     render();
     status.hidden = true;
     document.querySelector('#archive').hidden = false;

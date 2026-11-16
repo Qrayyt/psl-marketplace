@@ -7,7 +7,7 @@
   <title>Справочник дилера — PSL</title>
   <link rel="stylesheet" href="/assets/css/handbook.css?v=1">
   <script defer src="/assets/js/api.js?v=20261116-handbook"></script>
-  <script defer src="/assets/js/handbook.js?v=1"></script>
+  <script defer src="/assets/js/handbook.js?v=2"></script>
 </head>
 <body data-admin-preview>
   <header class="bar">
@@ -19,16 +19,18 @@
     <p id="status" role="status">Проверяем доступ…</p>
     <a id="login" class="action" hidden>Войти в аккаунт</a>
     <div id="archive" hidden>
-      <p class="intro">Архив техкарт и сертификатов. Актуальность редакций проверяется.</p>
+      <p class="intro">Системы, области применения и материалы для партнёров. Техкарты доступны в карточках <a href="/">каталога</a>.</p>
       <div class="layout">
         <nav aria-label="Разделы справочника">
-          <button type="button" data-section="" aria-pressed="true">Все документы</button>
-          <button type="button" data-section="technical" aria-pressed="false">Техкарты</button>
-          <button type="button" data-section="certificates" aria-pressed="false">Сертификаты</button>
+          <button type="button" data-section="" aria-pressed="true">Все материалы</button>
+          <button type="button" data-section="Системы решений" aria-pressed="false">Системы решений</button>
+          <button type="button" data-section="Отрасли применения" aria-pressed="false">Отрасли применения</button>
+          <button type="button" data-section="Работа с партнёрами" aria-pressed="false">Работа с партнёрами</button>
+          <button type="button" data-section="Архив сертификатов" aria-pressed="false">Сертификаты</button>
         </nav>
-        <section aria-label="Документы">
+        <section aria-label="Материалы">
           <label for="search">Поиск по названию</label>
-          <input type="search" id="search" placeholder="Например, WIRON Isolit">
+          <input type="search" id="search" placeholder="Например, парковки">
           <p class="count" id="count" role="status"></p>
           <ul id="documents"></ul>
         </section>
