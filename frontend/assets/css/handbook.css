@@ -31,3 +31,12 @@ li a { flex: none; }
   li { align-items: flex-start; flex-direction: column; }
 }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.wiki-article { max-width: 920px; }
+.wiki-article nav { flex-direction: row; margin-bottom: 26px; }
+.wiki-article h2 { margin-top: 36px; }
+.wiki-article ol { line-height: 1.55; padding-left: 26px; }
+.wiki-article ol li { display: list-item; padding: 10px 0; }
+.wiki-topics li { display: block; }
+.wiki-system-links { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.wiki-system-links a { display: grid; gap: 7px; border: 1px solid #dededb; border-radius: 14px; padding: 18px; background: #fff; }
+.wiki-system-links span { color: #565653; }

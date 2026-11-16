@@ -6,6 +6,11 @@
   const buttons = [...document.querySelectorAll('[data-section]')];
   let documents = [];
   let section = '';
+  const articlePaths = {
+    '/page36697184.html': '/handbook/systems.html',
+    '/page44064755.html': '/handbook/fixtile-pro.html',
+    '/page44415923.html': '/handbook/fixtile-classic.html'
+  };
 
   function render() {
     const query = search.value.trim().toLocaleLowerCase('ru').split(/\s+/);
@@ -20,10 +25,13 @@
       title.textContent = item.title;
       if (item.source) {
         const link = document.createElement('a');
-        link.href = item.source;
-        link.target = '_blank';
-        link.rel = 'noopener noreferrer';
-        link.textContent = 'Открыть в старом справочнике ↗';
+        const localPath = articlePaths[new URL(item.source).pathname];
+        link.href = localPath || item.source;
+        link.textContent = localPath ? 'Читать статью →' : 'Открыть в старом справочнике ↗';
+        if (!localPath) {
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+        }
         detail.textContent = item.section;
         info.append(title, detail);
         row.append(info, link);
