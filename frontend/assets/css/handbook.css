@@ -9,13 +9,12 @@ h1 { font-size: clamp(36px, 6vw, 76px); letter-spacing: -.06em; margin: 0 0 16px
 .intro, #status, .count, small { color: #565653; }
 .layout { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; margin-top: 34px; }
 nav { display: flex; flex-direction: column; gap: 8px; }
-button, input, .action { font: inherit; border: 1px solid #dededb; background: #fff; color: inherit; border-radius: 12px; padding: 12px 15px; transition: background .15s, color .15s; }
+button, input { font: inherit; border: 1px solid #dededb; background: #fff; color: inherit; border-radius: 12px; padding: 12px 15px; transition: background .15s, color .15s; }
 button { cursor: pointer; }
 button:hover { background: #efefec; }
 button:disabled { opacity: .6; cursor: wait; }
 nav button { text-align: left; }
-button[aria-pressed="true"], .action { background: #161616; color: #fff; }
-.action { display: inline-block; text-decoration: none; }
+button[aria-pressed="true"] { background: #161616; color: #fff; }
 [hidden] { display: none !important; }
 label { display: block; font-weight: 600; margin-bottom: 8px; }
 input { width: 100%; }
@@ -25,7 +24,7 @@ li { display: flex; align-items: center; justify-content: space-between; gap: 16
 li + li { border-top: 1px solid #ededeb; }
 li div { min-width: 0; overflow-wrap: anywhere; }
 small { display: block; margin-top: 6px; }
-li button { flex: none; }
+li a { flex: none; }
 @media (max-width: 680px) {
   .layout { grid-template-columns: 1fr; gap: 20px; }
   nav { flex-direction: row; flex-wrap: wrap; }

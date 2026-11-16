@@ -3,7 +3,6 @@ import path from 'node:path';
 import { Router } from 'express';
 import { z } from 'zod';
 import { prisma } from '../config/db';
-import { authenticate } from '../middleware/auth';
 import { successResponse } from '../utils/apiResponse';
 import { AppError } from '../utils/AppError';
 
@@ -25,28 +24,6 @@ const manifest = z.object({
     source: z.string().regex(/^https:\/\/psl-handbook-insight\.tilda\.ws\/page[0-9]+\.html$/),
   })),
 });
-
-const protect = Router();
-protect.use((_req, res, next) => {
-  res.set({ 'Cache-Control': 'private, no-store', 'X-Robots-Tag': 'noindex' });
-  next();
-}, authenticate, async (req, _res, next) => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.user!.id },
-      select: { role: true, isBlocked: true, handbookAccess: true },
-    });
-    if (!user || user.isBlocked || (!user.handbookAccess && user.role !== 'ADMIN')) {
-      return next(new AppError('Доступ к справочнику не выдан', 403));
-    }
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.use(protect);
-productHandbookRoutes.use(protect);
 
 async function loadHandbook() {
   try {
@@ -93,7 +70,7 @@ function serveDocument(documents: (req: import('express').Request) => Promise<z.
       const parsed = id.safeParse(req.params.documentId);
       const document = parsed.success && (await documents(req)).find(item => item.id === parsed.data);
       if (!document) throw new AppError('Документ не найден', 404);
-      res.download(path.join(directory, document.id + '.pdf'), document.filename, { cacheControl: false }, error => {
+      res.download(path.join(directory, document.id + '.pdf'), document.filename, error => {
         if (error) next(res.headersSent ? error : new AppError('Файл недоступен', 404));
       });
     } catch (error) {

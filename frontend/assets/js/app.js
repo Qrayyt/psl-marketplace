@@ -336,7 +336,7 @@
     const api = window.PSL_API;
     const productPath = '/api/products/' + encodeURIComponent(id);
     const endpoint = (api?.baseUrl || '') + productPath + '/documents';
-    loadArchivedTechnicalSheets(root, productPath);
+    loadArchivedTechnicalSheets(root, (api?.baseUrl || '') + productPath + '/handbook-documents');
     try {
       const response = await fetch(endpoint, {signal: AbortSignal.timeout(5000)});
       if(!response.ok) return;
@@ -352,13 +352,9 @@
     }
   }
 
-  async function loadArchivedTechnicalSheets(root, productPath){
-    const api = window.PSL_API;
-    if(!api || !(api.getToken() || api.getRefreshToken())) return;
+  async function loadArchivedTechnicalSheets(root, endpoint){
     try {
-      if(!api.getToken() && !await api.refreshToken()) return;
-      const endpoint = productPath + '/handbook-documents';
-      const response = await api.fetch(endpoint, {signal: AbortSignal.timeout(5000)});
+      const response = await fetch(endpoint, {signal: AbortSignal.timeout(5000)});
       if(!response.ok) return;
       const {data} = await response.json();
       const section = root.querySelector('[data-product-documents]');
@@ -367,36 +363,17 @@
       archive.className = 'option-block';
       const title = document.createElement('div');
       title.className = 'option-label';
-      title.textContent = 'Архивные техкарты для дилеров';
+      title.textContent = 'Архивные техкарты';
       const list = document.createElement('ul');
       list.className = 'detail-list';
-      const status = document.createElement('p');
-      status.setAttribute('role', 'status');
-      archive.append(title, list, status);
+      archive.append(title, list);
       for(const doc of data){
         const item = document.createElement('li');
-        const button = document.createElement('button');
-        button.className = 'source-link';
-        button.type = 'button';
-        button.textContent = doc.filename + ' ↓';
-        button.addEventListener('click', async () => {
-          button.disabled = true;
-          status.textContent = '';
-          try {
-            const file = await api.fetch(endpoint + '/' + encodeURIComponent(doc.id));
-            if(!file.ok) throw new Error();
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(await file.blob());
-            link.download = doc.filename;
-            link.click();
-            setTimeout(() => URL.revokeObjectURL(link.href), 60_000);
-          } catch {
-            status.textContent = 'Не удалось скачать техкарту.';
-          } finally {
-            button.disabled = false;
-          }
-        });
-        item.append(button);
+        const link = document.createElement('a');
+        link.className = 'source-link';
+        link.href = endpoint + '/' + encodeURIComponent(doc.id);
+        link.textContent = doc.filename + ' ↓';
+        item.append(link);
         list.append(item);
       }
       section.after(archive);
