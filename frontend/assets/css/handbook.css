@@ -3,9 +3,6 @@
 body { margin: 0; line-height: 1.55; }
 :focus-visible { outline: 2px solid #204b83; outline-offset: 4px; }
 a { color: inherit; text-underline-offset: 4px; }
-.bar { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 14px max(5vw, 20px); background: white; border-bottom: 1px solid #e3e3e1; }
-.bar a { display: inline-flex; align-items: center; min-height: 44px; }
-.bar img { display: block; }
 main { max-width: 1280px; margin: auto; padding: clamp(36px, 7vw, 90px) max(5vw, 20px); }
 h1 { font-size: clamp(36px, 6vw, 76px); letter-spacing: -.045em; margin: 0 0 16px; line-height: 1.1; overflow-wrap: anywhere; }
 .intro, #status, .count, small { color: #565653; }

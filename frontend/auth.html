@@ -6,9 +6,18 @@
   <meta name="referrer" content="same-origin"><title>Вход в аккаунт — PSL</title>
   <link rel="stylesheet" href="assets/css/auth-page.css">
   <script defer src="assets/js/api.js?v=20261116-1"></script><script defer src="assets/js/auth-page.js?v=20261116-2"></script>
+  <link rel="stylesheet" href="/assets/css/site-nav.css?v=1">
 </head>
 <body data-auth-page>
   <div class="auth-shell">
+    <nav class="psl-site-nav" aria-label="Разделы PSL">
+  <div class="psl-site-nav-inner">
+    <a href="/">Каталог</a>
+    <a href="/handbook/">Справочник</a>
+    <a href="/ai-chat.html">Guardex</a>
+    <a href="/profile.html">Профиль</a>
+  </div>
+</nav>
     <header class="auth-header"><a class="auth-brand" href="index.html" aria-label="PSL — главная"><img src="assets/images/psl-logo.svg" alt="PSL" width="96" height="33"><span>Polymer System<br>Labs</span></a><a class="auth-back" href="index.html" data-back>Вернуться на сайт <span aria-hidden="true">↗</span></a></header>
     <main class="auth-main" id="main"><span class="auth-dash" aria-hidden="true"></span><div data-auth-content></div></main>
     <footer class="auth-footer"><span>© <span data-year>2026</span> Polymer System Labs</span><a href="privacy.html">Конфиденциальность</a></footer>

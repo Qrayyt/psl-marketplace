@@ -7,8 +7,17 @@
     if(seen || matchMedia('(prefers-reduced-motion: reduce)').matches) opening.remove();
     else {
       document.documentElement.classList.add('opening-active');
-      setTimeout(() => { opening.classList.add('opening-leave'); document.documentElement.classList.remove('opening-active'); },1100);
-      setTimeout(() => opening.remove(),1700);
+      const finish = () => {
+        document.removeEventListener('focusin', finish);
+        opening.remove();
+        document.documentElement.classList.remove('opening-active');
+      };
+      document.addEventListener('focusin', finish, { once: true });
+      setTimeout(() => {
+        opening.classList.add('opening-leave');
+        document.documentElement.classList.remove('opening-active');
+      }, 450);
+      setTimeout(finish, 1000);
     }
     // Restore navigation immediately when returning from the browser cache.
     window.addEventListener('pageshow',e => { if(e.persisted){ opening.remove(); document.documentElement.classList.remove('opening-active'); } });
