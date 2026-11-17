@@ -7,7 +7,9 @@
     "doc": "doc"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node scripts/check-ui.cjs",
+    "check:ui": "node scripts/check-ui.cjs",
+    "test:assistant": "node tests/assistant-catalog.cjs"
   },
   "keywords": [],
   "author": "",

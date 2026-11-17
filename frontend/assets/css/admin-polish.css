@@ -1,0 +1,9 @@
+/* PSL Admin 1.1: common visual rhythm without replacing native panel layouts. */
+:root{--psl-admin-ink:#161616;--psl-admin-line:#e5e5e5}
+body[data-psl-admin]{color:var(--psl-admin-ink);font-family:Arial,Helvetica,sans-serif}
+body[data-psl-admin] :is(a,button,input,textarea,select,summary):focus-visible{outline:2px solid #161616;outline-offset:3px}
+body[data-psl-admin] :is(button,a){touch-action:manipulation}
+body[data-psl-admin] :is(.admin-header,.support-header){border-color:var(--psl-admin-line)}
+body[data-psl-admin] :is(.sidebar,.support-main,.admin-layout){min-width:0}
+body[data-psl-admin] :is(.admin-dialog,.notifications,.room,.case-panel){border-color:var(--psl-admin-line)}
+@media(max-width:680px){body[data-psl-admin] .support-main{padding-inline:16px}}

@@ -194,7 +194,16 @@ function generateProducts() {
 }
 
 async function seed() {
-  console.log('Очистка БД...');
+  // Legacy clothing demo. Destructively removes all business data. Never run in production.
+  if (process.env.NODE_ENV === 'production' ||
+      process.env.PSL_ALLOW_DESTRUCTIVE_DEMO_SEED !== 'YES_I_UNDERSTAND') {
+    throw new Error('Destructive demo seed blocked. Use migrations and PSL catalog imports instead.');
+  }
+  if ((process.env.PSL_DEMO_ADMIN_PASSWORD || '').length < 12 ||
+      (process.env.PSL_DEMO_USER_PASSWORD || '').length < 12) {
+    throw new Error('For disposable local databases, set unique PSL_DEMO_*_PASSWORD values of at least 12 characters.');
+  }
+  console.log('Очистка исключительно ТЕСТОВОЙ БД...');
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
   await prisma.cartItem.deleteMany();
@@ -208,7 +217,7 @@ async function seed() {
 
   // Админ
   console.log('Создание админа...');
-  const adminHash = await bcrypt.hash('admin123', 12);
+  const adminHash = await bcrypt.hash(process.env.PSL_DEMO_ADMIN_PASSWORD!, 12);
   await prisma.user.create({
     data: {
       email: 'admin@psl.ru',
@@ -219,7 +228,7 @@ async function seed() {
   });
 
   // Тестовый пользователь
-  const userHash = await bcrypt.hash('user123', 12);
+  const userHash = await bcrypt.hash(process.env.PSL_DEMO_USER_PASSWORD!, 12);
   await prisma.user.create({
     data: {
       email: 'user@test.ru',

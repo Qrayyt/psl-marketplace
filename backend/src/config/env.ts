@@ -1,6 +1,15 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
+const isProduction = process.env.NODE_ENV === 'production';
+function jwtSecret(name: 'JWT_ACCESS_SECRET' | 'JWT_REFRESH_SECRET', fallback: string): string {
+  const value = process.env[name]?.trim();
+  if (isProduction && (!value || value.length < 32 || /^(dev-|change-me)/i.test(value))) {
+    throw new Error(name + ' must contain a unique, non-default secret of at least 32 characters');
+  }
+  return value || fallback;
+}
+
 export const env = {
   port: parseInt(process.env.PORT || '3000', 10),
   nodeEnv: process.env.NODE_ENV || 'development',
@@ -10,8 +19,8 @@ export const env = {
   redisUrl: process.env.REDIS_URL || 'redis://localhost:6379',
 
   jwt: {
-    accessSecret: process.env.JWT_ACCESS_SECRET || 'dev-access-secret',
-    refreshSecret: process.env.JWT_REFRESH_SECRET || 'dev-refresh-secret',
+    accessSecret: jwtSecret('JWT_ACCESS_SECRET', 'dev-access-secret'),
+    refreshSecret: jwtSecret('JWT_REFRESH_SECRET', 'dev-refresh-secret'),
     accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
     refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
