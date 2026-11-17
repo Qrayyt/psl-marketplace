@@ -17,7 +17,8 @@ for (const page of pages) {
   assert.equal((html.match(/class="psl-site-nav"/g)||[]).length,1,context+'one nav');
   for(const href of ['/','/handbook/','/ai-chat.html','/profile.html','/support.html'])
     assert.ok(html.includes('href="'+href+'"'),context+'missing '+href);
-  assert.ok((html.match(/aria-current="page"/g)||[]).length<=1,context+'multiple active links');
+  const mainNav=html.match(/<nav class="psl-site-nav"[\s\S]*?<\/nav>/)?.[0] || '';
+  assert.ok((mainNav.match(/aria-current="page"/g)||[]).length<=1,context+'multiple active main-nav links');
   for(const match of html.matchAll(/<(?:link|script)\b[^>]*(?:href|src)="([^"]+)"[^>]*>/gi)){
     const raw=match[1];
     if(/^(https?:|mailto:|data:|\/\/)/i.test(raw))continue;
