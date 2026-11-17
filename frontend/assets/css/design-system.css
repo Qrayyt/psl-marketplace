@@ -1,0 +1,24 @@
+/* PSL Marketplace design tokens · v1.1, loaded last */
+:root{color-scheme:light;--psl-ink:#151515;--psl-muted:#686868;--psl-border:#e5e5e5;--psl-surface:#fff;--psl-soft:#f6f6f6;--psl-brand-red:#d20c26;--psl-radius-sm:10px;--psl-radius-md:14px;--psl-radius-lg:20px}
+html{background:#fff}
+body:not([data-admin-preview]){background-color:#fff;color:var(--psl-ink);font-family:Arial,Helvetica,sans-serif;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+body:not([data-admin-preview]) ::selection{background:#151515;color:#fff}
+body:not([data-admin-preview]) :is(h1,h2,h3){color:var(--psl-ink);text-wrap:balance}
+body:not([data-admin-preview]) :is(button,input,select,textarea){font-family:inherit}
+body:not([data-admin-preview]) :is(a,button,input,select,textarea,summary):focus-visible{outline:2px solid #151515;outline-offset:3px}
+body:not([data-admin-preview]) :is(input,textarea,select){min-width:0;accent-color:var(--psl-ink)}
+body:not([data-admin-preview]) :is(button,a){touch-action:manipulation}
+body:not([data-admin-preview]) :is(.account-panel,.detail-card,.wiki-system-links a,.market-grid .product-card){border-radius:var(--psl-radius-lg)}
+body:not([data-admin-preview]) .auth-shell{min-height:calc(100dvh - 58px)}
+body:not([data-admin-preview]) :is(.auth-view,.wiki-system-links a){box-shadow:none}
+body:not([data-admin-preview]) :is(.wiki-system-links a,#documents,.account-panel){border-color:var(--psl-border)}
+body:not([data-admin-preview]) .wiki-system-links a:hover{border-color:#bdbdbd;background:#fafafa}
+body:not([data-admin-preview]) :is(.wiki-article,main .layout){min-width:0}
+body:not([data-admin-preview]) :is(.support-main,.wiki-article){overflow-wrap:break-word}
+body:not([data-admin-preview]) :is(.market-grid img,.product-layout img){object-fit:contain}
+body:not([data-admin-preview]) [role="alert"]{overflow-wrap:anywhere}
+body:not([data-admin-preview]) :is(.market-footer,.sidebar-help){color:var(--psl-muted)}
+body:not([data-admin-preview]) :is(.wiki-system-links span,#documents small){color:var(--psl-muted)}
+body:not([data-admin-preview]) :is(#documents a,.wiki-article a):hover{color:#111;text-decoration:underline}
+@media(max-width:680px){body:not([data-admin-preview]) .auth-shell{min-height:calc(100dvh - 54px)}body:not([data-admin-preview]) .market-wrap{width:calc(100% - 32px)}body:not([data-admin-preview]) .wiki-system-links{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}body:not([data-admin-preview]) :is(*,*::before,*::after){scroll-behavior:auto}}
