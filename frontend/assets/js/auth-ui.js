@@ -165,22 +165,6 @@
     };
   }
 
-  // --- Cookie-баннер ---
-  function showCookieBanner(){
-    if(localStorage.getItem('psl_cookies_accepted')) return;
-
-    var banner = document.createElement('div');
-    banner.className = 'cookie-banner';
-    banner.innerHTML = '<span>Мы используем cookie для работы сайта. <a href="privacy.html">Подробнее</a></span>' +
-      '<button class="primary-btn" style="padding:6px 16px;font-size:13px" data-accept-cookies>Принять</button>';
-    document.body.appendChild(banner);
-
-    banner.querySelector('[data-accept-cookies]').onclick = function(){
-      localStorage.setItem('psl_cookies_accepted', '1');
-      banner.remove();
-    };
-  }
-
   // --- Хелперы ---
   function esc(str){ return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
   function fmtPrice(v){ return new Intl.NumberFormat('ru-RU').format(v) + ' ₽'; }
@@ -394,7 +378,6 @@
   document.addEventListener('DOMContentLoaded', function(){
     updateAuthUI();
     initCheckout();
-    showCookieBanner();
     initPromoField();
     initCatalogPagination();
     loadDynamicCategories();

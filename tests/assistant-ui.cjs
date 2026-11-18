@@ -7,7 +7,7 @@ const types={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg
  for(const width of [1440,390,337]){
  const page=await browser.newPage({viewport:{width,height:width>760?1000:844}});let errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.route('**/*',async route=>{const url=new URL(route.request().url());if(url.pathname.startsWith('/api/')){await route.fulfill({contentType:'application/json',body:JSON.stringify(url.pathname==='/api/products/all'?ctx.window.PRODUCTS:{success:true,data:[]})});return;}const name=path.join(root,'frontend',decodeURIComponent(url.pathname==='/'?'/index.html':url.pathname));if(fs.existsSync(name)&&fs.statSync(name).isFile())await route.fulfill({contentType:types[path.extname(name)]||'application/octet-stream',body:fs.readFileSync(name)});else await route.fulfill({status:404,body:'not found'});});
- await page.goto('https://psl.test/ai-chat.html');await page.waitForFunction(()=>window.PSLChatBlocks && !document.querySelector('.welcome').hidden);
+ await page.goto('https://psl.test/ai-chat.html');await page.waitForFunction(()=>window.PSLChatBlocks && !document.querySelector('.welcome').hidden);await page.locator('.psl-cookie-notice button').click();
  await page.locator('#message').fill('Покажи WIRON');await page.locator('.send').click();await page.locator('.material-card').first().waitFor();
  assert.equal(await page.locator('.material-card').count(),1);assert(await page.locator('.material-info strong').textContent()==='WIRON');
  assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));

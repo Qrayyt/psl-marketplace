@@ -7,7 +7,7 @@
     "doc": "doc"
   },
   "scripts": {
-    "test": "node tests/assistant-catalog.cjs && node tests/assistant-rendering.cjs",
+    "test": "node tests/assistant-catalog.cjs && node tests/assistant-rendering.cjs && node tests/privacy-ui.cjs",
     "test:ui": "node tests/assistant-ui.cjs"
   },
   "keywords": [],
