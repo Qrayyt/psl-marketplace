@@ -37,3 +37,8 @@
   .psl-site-nav a { flex: 1 0 auto; padding-inline: .4rem; }
   .psl-site-nav .psl-site-nav-brand { display: none; }
 }
+
+.site-error { max-width: 720px; margin: 64px auto; padding: 0 24px; font: 16px/1.6 Arial, sans-serif; color: #272727; }
+.site-error h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.2; }
+.site-error input { box-sizing: border-box; display: block; width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ccc; border-radius: 8px; font: inherit; }
+.site-error button { padding: 12px 20px; background: #272727; color: #fff; border: 0; border-radius: 8px; font: inherit; cursor: pointer; }

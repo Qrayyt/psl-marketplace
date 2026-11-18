@@ -47,13 +47,9 @@ async function productDocuments(slug: string) {
   return (await loadHandbook()).documents.filter(item => item.section === 'technical' && normalizeProduct(item.product) === name);
 }
 
-router.get('/', async (_req, res, next) => {
-  try {
-    const data = await loadHandbook();
-    successResponse(res, { articles: data.articles, documents: data.documents.filter(item => item.section === 'certificates') });
-  } catch (error) {
-    next(error);
-  }
+// The wiki UI has been retired. Product PDF routes remain public.
+router.get('/', (_req, res) => {
+  res.status(410).json({ success: false, message: 'Раздел справочника удалён' });
 });
 
 productHandbookRoutes.get<{ id: string }>('/', async (req, res, next) => {

@@ -43,17 +43,7 @@
   function renderHistory(){history.innerHTML=chats.filter(c=>c.title.toLowerCase().includes(filter)).map(c=>`<div class="history-item ${c.id===current?'active':''}"><button class="history-open" data-chat="${esc(c.id)}" ${c.id===current?'aria-current="true"':''} title="${esc(c.title)}">${esc(c.title)}</button><button class="history-delete" data-delete="${esc(c.id)}" aria-label="Удалить чат ${esc(c.title)}">${icon('trash')}</button></div>`).join('')||`<p class="history-empty">${filter?'Чаты не найдены.':'Здесь появятся ваши диалоги.'}</p>`;}
   function actions(m,i){return `<div class="message-actions"><button class="icon-btn" data-copy="${i}" aria-label="Скопировать ответ" title="Скопировать">${icon('copy')}</button><button class="icon-btn ${m.liked?'selected':''}" data-like="${i}" aria-label="Полезный ответ" aria-pressed="${!!m.liked}" title="Полезно">${icon('thumb')}</button><button class="icon-btn" data-retry="${i}" aria-label="Повторить ответ" title="Повторить">${icon('retry')}</button></div>`;}
   const assistantLabel=`<div class="assistant-label"><span class="mini-logo"><img src="assets/images/psl-logo.svg" alt=""></span>Guardex</div>`;
-  function handbookSources(ids){
-    const handbook = window.PSLHandbook;
-    if (!handbook || !Array.isArray(ids)) return '';
-    const links = ids.slice(0, 3).flatMap(id => {
-      const path = handbook.articlePath(id);
-      const title = handbook.articles[id]?.title || handbook.sourceTitles[id];
-      return path && typeof title === 'string' ? [`<a class="plain-product-link" href="${esc(path)}">${esc(title)} ↗</a>`] : [];
-    });
-    return links.length ? '<div class="followups" aria-label="Источники в справочнике">' + links.join('') + '</div>' : '';
-  }
-  function render(){const chat=active(),messages=chat?.messages||[];welcome.hidden=!!messages.length;thread.hidden=!messages.length;thread.innerHTML=messages.map((m,i)=>m.role==='user'?`<article class="message user-message" aria-label="Ваше сообщение"><div class="user-bubble">${esc(m.text)}</div></article>`:`<article class="message assistant-message" aria-label="Ответ Guardex">${assistantLabel}<div class="answer-text">${format.render(m.text)}</div>${blocks(m.blocks)}${handbookSources(m.sources)}${Array.isArray(m.links)?`<div class="followups">${m.links.map(product).filter(Boolean).map(p=>`<a class="plain-product-link" href="${href(p.id)}">${esc(p.name)} ↗</a>`).join('')}</div>`:''}${actions(m,i)}${Array.isArray(m.followups)?`<div class="followups">${m.followups.slice(0,3).map(t=>`<button data-prompt="${esc(t)}">${esc(t)} ${'↗'}</button>`).join('')}</div>`:''}</article>`).join('');if(busy)thread.insertAdjacentHTML('beforeend',`<article class="message pending" role="status" aria-label="Поиск по каталогу">${assistantLabel}<div class="waiting" aria-hidden="true"><span></span><span></span><span></span></div></article>`);document.title=chat?chat.title+' — Guardex':'Guardex — PSL';renderHistory();updateJump();}
+  function render(){const chat=active(),messages=chat?.messages||[];welcome.hidden=!!messages.length;thread.hidden=!messages.length;thread.innerHTML=messages.map((m,i)=>m.role==='user'?`<article class="message user-message" aria-label="Ваше сообщение"><div class="user-bubble">${esc(m.text)}</div></article>`:`<article class="message assistant-message" aria-label="Ответ Guardex">${assistantLabel}<div class="answer-text">${format.render(m.text)}</div>${blocks(m.blocks)}${Array.isArray(m.links)?`<div class="followups">${m.links.map(product).filter(Boolean).map(p=>`<a class="plain-product-link" href="${href(p.id)}">${esc(p.name)} ↗</a>`).join('')}</div>`:''}${actions(m,i)}${Array.isArray(m.followups)?`<div class="followups">${m.followups.slice(0,3).map(t=>`<button data-prompt="${esc(t)}">${esc(t)} ${'↗'}</button>`).join('')}</div>`:''}</article>`).join('');if(busy)thread.insertAdjacentHTML('beforeend',`<article class="message pending" role="status" aria-label="Поиск по каталогу">${assistantLabel}<div class="waiting" aria-hidden="true"><span></span><span></span><span></span></div></article>`);document.title=chat?chat.title+' — Guardex':'Guardex — PSL';renderHistory();updateJump();}
   function bottom(){scroller.scrollTo({top:scroller.scrollHeight,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
   function updateJump(){document.querySelector('.jump').hidden=scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<160;}
   function updateInput(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,145)+'px';send.disabled=!input.value.trim()&&!busy;send.setAttribute('aria-label',busy?'Остановить ответ':'Отправить сообщение');send.innerHTML=busy?'<span style="width:10px;height:10px;background:currentColor;border-radius:2px"></span>':icon('up');}
@@ -76,16 +66,7 @@
         openHandoff();
         return;
       }
-      const handbook = window.PSLHandbook;
-      const sources = handbook?.search(text) || [];
-      const article = handbook?.articles[sources[0]?.id];
-      const result = article?.blocks
-        ? {
-            text: '## ' + article.title + '\n' + (article.historical ? 'Справочная редакция. Действующие условия уточняйте у PSL.\n\n' : '')
-              + article.blocks.flatMap(([heading, points]) => ['### ' + heading, ...points.map(point => '- ' + point)]).join('\n'),
-            blocks: [],
-          }
-        : catalog.reply(text, prior);
+      const result = catalog.reply(text, prior);
       const ids = [...new Set((result.blocks || []).flatMap(block => block.ids || []))];
       chat.messages.push({
         role:'assistant',
@@ -93,7 +74,6 @@
         blocks:visualEnabled ? result.blocks : [],
         links:visualEnabled ? [] : ids,
         followups:result.followups,
-        sources:sources.map(source => source.id),
       });
       chat.updated = Date.now();
       cancel();
