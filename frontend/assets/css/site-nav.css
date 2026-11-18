@@ -26,9 +26,9 @@
   .psl-nav-guardex .psl-nav-icon { background: transparent; color: inherit; }
   .psl-nav-label { font-size: 11px; font-weight: 600; letter-spacing: 0; }
   .psl-nav-caption, .psl-nav-arrow { display: none; }
-  .psl-site-nav .psl-nav-item[aria-current] { color: #2389d7; background: #e9f4ff; }
+  .psl-site-nav .psl-nav-item[aria-current] { color: #fff; background: #171717; }
   .psl-site-nav .psl-nav-item:hover { background: #f0f5fa; box-shadow: none; }
-  .psl-site-nav .psl-nav-item[aria-current]:hover { background: #e1effe; }
+  .psl-site-nav .psl-nav-item[aria-current]:hover { background: #303030; }
   .psl-site-nav .psl-nav-item:focus-visible { outline-offset: -2px; }
   .psl-has-site-nav .toast-wrap, .psl-has-site-nav .account-notices, .psl-has-site-nav .toast { bottom: var(--psl-nav-space); }
   .psl-has-site-nav .market-actions > a[aria-label="Личный кабинет"] { display: none; }

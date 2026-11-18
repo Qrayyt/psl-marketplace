@@ -7,13 +7,15 @@
     "doc": "doc"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/assistant-catalog.cjs && node tests/assistant-rendering.cjs",
+    "test:ui": "node tests/assistant-ui.cjs"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@playwright/test": "^1.59.1",
+    "jsdom": "^26.1.0",
     "playwright": "^1.59.1"
   }
 }
