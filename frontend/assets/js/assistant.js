@@ -28,17 +28,75 @@
   function active(){return chats.find(c=>c.id===current);}
   function save(){try{localStorage.setItem(key,JSON.stringify(chats.slice(0,40)));}catch{toast('История не сохранена: хранилище браузера недоступно.');}}
   function toast(text){clearTimeout(toastTimer);const el=document.querySelector('.toast');el.textContent=text;el.classList.add('visible');toastTimer=setTimeout(()=>el.classList.remove('visible'),2600);}
-  function renderHistory(){history.innerHTML=chats.filter(c=>c.title.toLowerCase().includes(filter)).map(c=>`<div class="history-item ${c.id===current?'active':''}"><button class="history-open" data-chat="${esc(c.id)}" ${c.id===current?'aria-current="true"':''} title="${esc(c.title)}">${esc(c.title)}</button><button class="history-delete" data-delete="${esc(c.id)}" aria-label="Удалить чат ${esc(c.title)}">${icon('trash')}</button></div>`).join('')||`<p class="history-empty">${filter?'Чаты не найдены.':'Здесь появятся ваши диалоги.'}</p>`;}
+  function renderHistory(){const html=chats.filter(c=>c.title.toLowerCase().includes(filter)).map(c=>`<div class="history-item ${c.id===current?'active':''}"><button class="history-open" data-chat="${esc(c.id)}" ${c.id===current?'aria-current="true"':''} title="${esc(c.title)}">${esc(c.title)}</button><button class="history-delete" data-delete="${esc(c.id)}" aria-label="Удалить чат ${esc(c.title)}">${icon('trash')}</button></div>`).join('')||`<p class="history-empty">${filter?'Чаты не найдены.':'Здесь появятся ваши диалоги.'}</p>`;if(history.__markup!==html){history.innerHTML=html;history.__markup=html;}}
   function actions(m,i){return `<div class="message-actions"><button class="icon-btn" data-copy="${i}" aria-label="Скопировать ответ" title="Скопировать">${icon('copy')}</button><button class="icon-btn ${m.liked?'selected':''}" data-like="${i}" aria-label="Полезный ответ" aria-pressed="${!!m.liked}" title="Полезно">${icon('thumb')}</button><button class="icon-btn" data-retry="${i}" aria-label="Повторить ответ" title="Повторить">${icon('retry')}</button></div>`;}
   const assistantLabel=`<div class="assistant-label"><span class="mini-logo"><img src="assets/images/psl-logo.svg" alt=""></span>Guardex</div>`;
-  function render(){const chat=active(),messages=chat?.messages||[];welcome.hidden=!!messages.length;thread.hidden=!messages.length;thread.innerHTML=messages.map((m,i)=>m.role==='user'?`<article class="message user-message" aria-label="Ваше сообщение"><div class="user-bubble">${esc(m.text)}</div></article>`:`<article class="message assistant-message" aria-label="Ответ Guardex">${assistantLabel}<div class="answer-text">${format.render(m.text)}</div>${blocks(m.blocks)}${Array.isArray(m.links)?`<div class="followups">${m.links.map(product).filter(Boolean).map(p=>`<a class="plain-product-link" href="${href(p.id)}">${esc(p.name)} ↗</a>`).join('')}</div>`:''}${actions(m,i)}${Array.isArray(m.followups)?`<div class="followups">${m.followups.slice(0,3).map(t=>`<button data-prompt="${esc(t)}">${esc(t)} ${'↗'}</button>`).join('')}</div>`:''}</article>`).join('');if(busy)thread.insertAdjacentHTML('beforeend',`<article class="message pending" role="status" aria-label="Поиск по каталогу">${assistantLabel}<div class="waiting" aria-hidden="true"><span></span><span></span><span></span></div></article>`);document.title=chat?chat.title+' — Guardex':'Guardex — PSL';renderHistory();updateJump();}
-  function bottom(){scroller.scrollTo({top:scroller.scrollHeight,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
-  function updateJump(){document.querySelector('.jump').hidden=scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<160;}
-  function updateInput(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,145)+'px';send.disabled=!input.value.trim()&&!busy;send.setAttribute('aria-label',busy?'Остановить ответ':'Отправить сообщение');send.innerHTML=busy?'<span style="width:10px;height:10px;background:currentColor;border-radius:2px"></span>':icon('up');}
+  let followLatest = true, scrollFrame = 0, scrollIntentUntil = 0;
+  const positions = new Map();
+  function render(){
+    const chat=active(),messages=chat?.messages||[];
+    const oldTop=scroller.scrollTop;
+    welcome.hidden=!!messages.length;thread.hidden=!messages.length;
+    const markup = messages.map((m,i)=>m.role==='user'?`<article class="message user-message" aria-label="Ваше сообщение"><div class="user-bubble">${esc(m.text)}</div></article>`:`<article class="message assistant-message" aria-label="Ответ Guardex">${assistantLabel}<div class="answer-text">${format.render(m.text)}</div>${blocks(m.blocks)}${Array.isArray(m.links)?`<div class="followups">${m.links.map(product).filter(Boolean).map(p=>`<a class="plain-product-link" href="${href(p.id)}">${esc(p.name)} ↗</a>`).join('')}</div>`:''}${actions(m,i)}${Array.isArray(m.followups)?`<div class="followups">${m.followups.slice(0,3).map(t=>`<button data-prompt="${esc(t)}">${esc(t)} ${'↗'}</button>`).join('')}</div>`:''}</article>`);
+    if(busy)markup.push(`<article class="message pending" role="status" aria-label="Guardex готовит ответ"><div class="waiting" aria-hidden="true"><span></span><span></span><span></span></div></article>`);
+    const existing=new Map([...thread.children].map(node=>[node.dataset.messageKey,node]));
+    markup.forEach((html,index)=>{
+      const key=(chat?.id||'new')+':'+(index<messages.length?index:'pending');
+      let node=existing.get(key);
+      if(!node || node.__markup!==html){
+        const template=document.createElement('template');template.innerHTML=html;
+        const replacement=template.content.firstElementChild;
+        replacement.dataset.messageKey=key;replacement.__markup=html;
+        if(node)node.replaceWith(replacement);
+        node=replacement;
+      }
+      if(thread.children[index]!==node)thread.insertBefore(node,thread.children[index]||null);
+      existing.delete(key);
+    });
+    existing.forEach(node=>node.remove());
+    document.title=chat?chat.title+' — Guardex':'Guardex — PSL';
+    renderHistory();
+    if(followLatest)bottom();else scroller.scrollTop=oldTop;
+    updateJump();
+  }
+  function bottom(force=false){
+    if(force){followLatest=true;scrollIntentUntil=0;}
+    if(!followLatest)return;
+    if(scrollFrame)cancelAnimationFrame(scrollFrame);
+    scrollFrame=requestAnimationFrame(()=>{scrollFrame=0;if(followLatest)scroller.scrollTop=scroller.scrollHeight;updateJump();});
+  }
+  function updateJump(){document.querySelector('.jump').hidden=scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<100;}
+  function updateInput(){
+    input.style.height='0px';
+    const height=Math.max(28,Math.min(input.scrollHeight,144));
+    input.style.height=height+'px';input.style.overflowY=input.scrollHeight>144?'auto':'hidden';
+    send.disabled=!input.value.trim()&&!busy;
+    send.setAttribute('aria-label',busy?'Остановить ответ':'Отправить сообщение');
+    send.innerHTML=busy?'<span style="width:10px;height:10px;background:currentColor;border-radius:2px"></span>':icon('up');
+  }
   function cancel(){clearTimeout(pending);pending=null;busy=false;updateInput();}
-  function openChat(id){cancel();current=id;const target=linked(active());if(target){location.assign(supportLink(target));return;}render();if(innerWidth<=760)setSidebar(false);bottom();}
-  function newChat(){cancel();current=null;filter='';search.value='';input.value='';updateInput();render();if(innerWidth<=760)setSidebar(false);input.focus();}
-  function setSidebar(open){const mobile=innerWidth<=760;if(mobile){document.body.classList.toggle('sidebar-open',open);sidebar.inert=!open;}else{document.body.classList.toggle('sidebar-closed',!open);sidebar.inert=!open;}document.querySelector('.open-sidebar').setAttribute('aria-expanded',String(open));}
+  function rememberPosition(){if(current)positions.set(current,{top:scroller.scrollTop,follow:followLatest});}
+  function openChat(id){
+    rememberPosition();cancel();current=id;
+    const target=linked(active());if(target){location.assign(supportLink(target));return;}
+    const position=positions.get(id);followLatest=position?.follow ?? true;
+    render();if(innerWidth<=760)setSidebar(false);
+    if(followLatest)bottom();else scroller.scrollTop=position.top;
+  }
+  function newChat(){
+    rememberPosition();cancel();current=null;followLatest=true;filter='';search.value='';input.value='';
+    updateInput();render();if(innerWidth<=760)setSidebar(false);
+    input.focus({preventScroll:true});
+  }
+  function setSidebar(open){
+    const mobile=innerWidth<=760;
+    if(mobile){
+      if(open && document.activeElement?.matches('input,textarea'))document.activeElement.blur();
+      document.body.classList.toggle('sidebar-open',open);sidebar.inert=!open;
+      document.querySelector('.workspace').inert=open;
+    }else{document.body.classList.toggle('sidebar-closed',!open);sidebar.inert=!open;}
+    document.querySelector('.open-sidebar').setAttribute('aria-expanded',String(open));
+  }
   function answer(chat, text, prior, visualEnabled){
     busy = true;
     render();
@@ -71,7 +129,7 @@
     }, 250);
     pending = timer;
   }
-  function submit(text){text=String(text||'').trim().slice(0,4000);if(!text||busy||handoffDialog.open)return;let chat=active();if(linked(chat)){location.assign(supportLink(linked(chat)));return;}if(!chat){chat={id:uid(),title:text.slice(0,52),updated:Date.now(),messages:[]};chats.unshift(chat);chats=chats.slice(0,40);current=chat.id;}if(chat.messages.length>=100){toast('Этот чат заполнен. Создайте новый диалог.');return;}const prior=[...chat.messages];chat.messages.push({role:'user',text});chat.updated=Date.now();chats=[chat,...chats.filter(c=>c.id!==chat.id)];input.value='';updateInput();save();answer(chat,text,prior,visual);}
+  function submit(text){text=String(text||'').trim().slice(0,4000);if(!text||busy||handoffDialog.open)return;let chat=active();if(linked(chat)){location.assign(supportLink(linked(chat)));return;}if(!chat){chat={id:uid(),title:text.slice(0,52),updated:Date.now(),messages:[]};chats.unshift(chat);chats=chats.slice(0,40);current=chat.id;}if(chat.messages.length>=100){toast('Этот чат заполнен. Создайте новый диалог.');return;}followLatest=true;scrollIntentUntil=0;const prior=[...chat.messages];chat.messages.push({role:'user',text});chat.updated=Date.now();chats=[chat,...chats.filter(c=>c.id!==chat.id)];input.value='';updateInput();save();answer(chat,text,prior,visual);}
   function openHandoff(){
     const chat=active();
     if(linked(chat)){location.assign(supportLink(linked(chat)));return;}
@@ -140,14 +198,39 @@
     if(el.hasAttribute('data-copy-code')){const code=el.closest('.markdown-code')?.querySelector('code');if(code)try{await navigator.clipboard.writeText(code.textContent);toast('Код скопирован');}catch{toast('Не удалось скопировать код');}}
     if(el.hasAttribute('data-copy')){const m=active()?.messages[Number(el.dataset.copy)];if(m)try{await navigator.clipboard.writeText(m.text);toast('Ответ скопирован');}catch{toast('Не удалось скопировать. Выделите текст ответа.');}}
     if(el.hasAttribute('data-like')){const m=active()?.messages[Number(el.dataset.like)];if(m){m.liked=!m.liked;el.classList.toggle('selected',m.liked);el.setAttribute('aria-pressed',String(m.liked));save();toast(m.liked?'Отметка сохранена в этом браузере':'Отметка снята');}}
-    if(el.hasAttribute('data-retry')&&!busy&&!linked(active())){const chat=active(),index=Number(el.dataset.retry),prior=chat?.messages.slice(0,index);const question=[...(prior||[])].reverse().find(m=>m.role==='user');if(question){chat.messages=prior;save();answer(chat,question.text,prior,visual);}}
-    if(el.classList.contains('jump'))bottom();
+    if(el.hasAttribute('data-retry')&&!busy&&!linked(active())){const chat=active(),index=Number(el.dataset.retry),prior=chat?.messages.slice(0,index);const question=[...(prior||[])].reverse().find(m=>m.role==='user');if(question){followLatest=true;scrollIntentUntil=0;chat.messages=prior;save();answer(chat,question.text,prior,visual);}}
+    if(el.classList.contains('jump'))bottom(true);
   });
   let undo=null;
-  document.addEventListener('keydown',e=>{if(!handoffDialog.open&&(e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();newChat();}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'&&undo&&!['INPUT','TEXTAREA'].includes(e.target.tagName)){e.preventDefault();chats.splice(undo.index,0,undo.chat);undo=null;save();render();toast('Чат восстановлен');}if(e.key==='Escape'&&innerWidth<=760)setSidebar(false);});
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Tab' && innerWidth<=760 && document.body.classList.contains('sidebar-open')){
+      const items=[...sidebar.querySelectorAll('a[href],button:not([disabled]),input')];
+      const first=items[0],last=items.at(-1);
+      if(e.shiftKey && (!sidebar.contains(document.activeElement)||document.activeElement===first)){e.preventDefault();last?.focus({preventScroll:true});}
+      else if(!e.shiftKey && (!sidebar.contains(document.activeElement)||document.activeElement===last)){e.preventDefault();first?.focus({preventScroll:true});}
+    }
+    if(!handoffDialog.open&&(e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();newChat();}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'&&undo&&!['INPUT','TEXTAREA'].includes(e.target.tagName)){e.preventDefault();chats.splice(undo.index,0,undo.chat);undo=null;save();render();toast('Чат восстановлен');}if(e.key==='Escape'&&innerWidth<=760)setSidebar(false);});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
-  scroller.addEventListener('scroll',updateJump,{passive:true});
-  let mobile=innerWidth<=760;window.addEventListener('resize',()=>{if(mobile!==(innerWidth<=760)){mobile=innerWidth<=760;document.body.classList.remove('sidebar-open','sidebar-closed');sidebar.inert=mobile;}updateJump();});
+  const scrollIntent=()=>{scrollIntentUntil=performance.now()+1200;};
+  scroller.addEventListener('touchmove',scrollIntent,{passive:true});
+  scroller.addEventListener('wheel',scrollIntent,{passive:true});
+  scroller.addEventListener('pointerdown',scrollIntent,{passive:true});
+  scroller.addEventListener('keydown',event=>{if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].includes(event.key))scrollIntent();});
+  scroller.addEventListener('scroll',()=>{
+    if(performance.now()<scrollIntentUntil)followLatest=scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<100;
+    updateJump();
+  },{passive:true});
+  // Images, a growing composer and the software keyboard must not move a reader away from old messages.
+  if(window.ResizeObserver){
+    const resize=new ResizeObserver(()=>{if(followLatest)bottom();else updateJump();});
+    resize.observe(thread);resize.observe(scroller);
+  }
+  window.addEventListener('psl:viewport',()=>{if(followLatest)bottom();});
+  thread.addEventListener('load',()=>{if(followLatest)bottom();},true);
+  send.addEventListener('pointerdown',event=>{
+    if(innerWidth<=760 && document.activeElement===input)event.preventDefault();
+  });
+  let mobile=innerWidth<=760;window.addEventListener('resize',()=>{if(mobile!==(innerWidth<=760)){mobile=innerWidth<=760;document.body.classList.remove('sidebar-open','sidebar-closed');sidebar.inert=mobile;document.querySelector('.workspace').inert=false;}updateJump();});
   sidebar.inert=mobile;
   (window.PSL_PRODUCTS_READY || Promise.resolve()).then(() => {
     const url=new URL(location.href);

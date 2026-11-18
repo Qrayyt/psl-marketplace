@@ -7,9 +7,10 @@
     "doc": "doc"
   },
   "scripts": {
-    "test": "node tests/assistant-catalog.cjs && node tests/assistant-rendering.cjs && node tests/privacy-ui.cjs",
+    "test": "node tests/assistant-catalog.cjs && node tests/assistant-rendering.cjs && node tests/privacy-ui.cjs && node tests/chat-viewport.cjs",
     "test:ui": "node tests/assistant-ui.cjs",
-    "test:consent": "npm run build --prefix backend && node tests/consent-api.cjs"
+    "test:consent": "npm run build --prefix backend && node tests/consent-api.cjs",
+    "test:mobile": "node tests/chat-mobile.cjs"
   },
   "keywords": [],
   "author": "",

@@ -7,7 +7,9 @@
   links.setAttribute('aria-label', 'Документы и данные');
   links.innerHTML = '<a href="/documents.html">Документы сайта</a><a href="/privacy.html">Персональные данные</a><a href="/cookies.html">Cookies</a>';
   const composer = document.querySelector('.composer-wrap');
-  if (composer) composer.append(links);
+  const chatSidebar = document.querySelector('.psl-chat-page .sidebar-bottom');
+  if (chatSidebar) chatSidebar.append(links);
+  else if (composer) composer.append(links);
   else document.body.append(links);
 
   function showNotice() {
