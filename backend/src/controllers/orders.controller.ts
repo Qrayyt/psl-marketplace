@@ -1,3 +1,4 @@
+import { consentSchema, consentProof, requireConsent } from '../services/consent.service';
 import { randomUUID } from 'node:crypto';
 import { env } from '../config/env';
 import { Request, Response, NextFunction } from 'express';
@@ -8,6 +9,7 @@ import { AppError } from '../utils/AppError';
 import { enqueueEmail } from '../jobs/email.queue';
 
 const createOrderSchema = z.object({
+  consent: consentSchema('order'),
   addressId: z.string().uuid().optional(),
   address: z.object({
     address: z.string().trim().min(1).max(300),
@@ -40,6 +42,7 @@ const orderDetails = {
 
 export async function createOrder(req: Request, res: Response, next: NextFunction) {
   try {
+    requireConsent(req.body?.consent, 'order');
     const data = createOrderSchema.parse(req.body);
     const userId = req.user!.id;
     const result = await prisma.$transaction(async tx => {
@@ -115,7 +118,7 @@ export async function createOrder(req: Request, res: Response, next: NextFunctio
       await tx.auditLog.create({
         data: {
           userId, action: 'order_created', entityType: 'order', entityId: order.id,
-          details: { orderNumber: order.orderNumber, total }, ip: req.ip,
+          details: { orderNumber: order.orderNumber, total, consent: consentProof('order') }, ip: req.ip,
         },
       });
       return { order, created: true };

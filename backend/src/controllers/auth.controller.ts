@@ -1,3 +1,4 @@
+import { consentSchema, consentProof, requireConsent } from '../services/consent.service';
 import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcrypt';
 import { z } from 'zod';
@@ -15,6 +16,7 @@ import {
 import { logAudit } from '../services/audit.service';
 
 const registerSchema = z.object({
+  consent: consentSchema('registration'),
   email: z.string().email('Invalid email format'),
   password: z.string().min(6, 'Password must be at least 6 characters'),
   name: z.string().min(1, 'Name is required'),
@@ -37,6 +39,7 @@ const resetPasswordSchema = z.object({
 
 export async function register(req: Request, res: Response, next: NextFunction) {
   try {
+    requireConsent(req.body?.consent, 'registration');
     const data = registerSchema.parse(req.body);
 
     const existing = await prisma.user.findUnique({ where: { email: data.email } });
@@ -45,26 +48,20 @@ export async function register(req: Request, res: Response, next: NextFunction) 
     }
 
     const passwordHash = await bcrypt.hash(data.password, 12);
-    const user = await prisma.user.create({
-      data: {
-        email: data.email,
-        passwordHash,
-        name: data.name,
-        phone: data.phone,
-      },
+    const user = await prisma.$transaction(async tx => {
+      const created = await tx.user.create({
+        data: { email: data.email, passwordHash, name: data.name, phone: data.phone },
+      });
+      await tx.auditLog.create({ data: {
+        userId: created.id, action: 'register', entityType: 'user', entityId: created.id,
+        details: { consent: consentProof('registration') }, ip: req.ip,
+      } });
+      return created;
     });
 
     const accessToken = generateAccessToken(user.id, user.role);
     const refreshToken = generateRefreshToken(user.id, user.role);
     await storeRefreshToken(user.id, refreshToken);
-
-    await logAudit({
-      userId: user.id,
-      action: 'register',
-      entityType: 'user',
-      entityId: user.id,
-      ip: req.ip,
-    });
 
     await enqueueEmail({ type: 'welcome', to: user.email, name: user.name });
 

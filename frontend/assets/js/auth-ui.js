@@ -132,7 +132,7 @@
         '<input type="text" name="address" placeholder="Адрес доставки" required>' +
         '<input type="text" name="postalCode" placeholder="Почтовый индекс">' +
         '<select name="deliveryMethod"><option value="courier">Курьер</option><option value="pickup">Самовывоз</option><option value="post">Почта России</option></select>' +
-        '<label class="auth-checkbox"><input type="checkbox" required> Согласен с <a href="privacy.html" target="_blank">обработкой персональных данных</a></label>' +
+        '<label class="auth-checkbox"><input type="checkbox" name="consent" required> Даю <a href="/consent.html#order" target="_blank" rel="noopener">согласие на обработку данных для заказа</a></label>' +
         '<div class="auth-error" data-checkout-error></div>' +
         '<button type="submit" class="primary-btn">Подтвердить заказ</button>' +
       '</form></div>';
@@ -147,11 +147,13 @@
       var err = form.querySelector('[data-checkout-error]');
       err.textContent = '';
 
+      if(!form.elements.consent.checked){err.textContent='Подтвердите согласие на обработку данных.';return;}
       API.fetch('/api/orders', {
         method: 'POST',
         body: JSON.stringify({
           address: { city: form.city.value, address: form.address.value, postalCode: form.postalCode.value },
           deliveryMethod: form.deliveryMethod.value,
+          consent: {accepted: form.elements.consent.checked, version:'2026-11-18-v1', purpose:'order'},
         })
       }).then(function(r){ return r.json(); }).then(function(data){
         if(!data.success){ err.textContent = data.error.message; return; }

@@ -8,7 +8,8 @@
   },
   "scripts": {
     "test": "node tests/assistant-catalog.cjs && node tests/assistant-rendering.cjs && node tests/privacy-ui.cjs",
-    "test:ui": "node tests/assistant-ui.cjs"
+    "test:ui": "node tests/assistant-ui.cjs",
+    "test:consent": "npm run build --prefix backend && node tests/consent-api.cjs"
   },
   "keywords": [],
   "author": "",

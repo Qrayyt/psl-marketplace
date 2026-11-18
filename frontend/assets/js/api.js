@@ -155,12 +155,12 @@
       return refresh.promise;
     },
 
-    register: function(email, password, name, phone){
+    register: function(email, password, name, phone, consent){
       var self = this;
       return fetch(API_BASE + '/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email, password: password, name: name, phone: phone || undefined })
+        body: JSON.stringify({ email: email, password: password, name: name, phone: phone || undefined, consent: consent })
       })
       .then(function(r){ return r.json(); })
       .then(function(data){

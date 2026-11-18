@@ -1,3 +1,4 @@
+import { consentSchema, consentProof, requireConsent } from '../services/consent.service';
 import { Router, Request, Response, NextFunction } from 'express';
 import { Prisma } from '@prisma/client';
 import { z } from 'zod';
@@ -14,6 +15,7 @@ const messageFields = { id: true, author: true, body: true, createdAt: true } as
 const body = z.string().trim().min(1).max(4000);
 const uuid = z.string().uuid();
 const handoff = z.object({
+  consent: consentSchema('support'),
   id: uuid,
   messages: z.array(z.object({ author: z.enum(['CUSTOMER', 'GUARDEX']), body })).max(40),
 });
@@ -50,6 +52,7 @@ function caseId(req: Request) {
 }
 
 router.post('/cases', run(async (req, res) => {
+  requireConsent(req.body?.consent, 'support');
   const { id, messages } = handoff.parse(req.body);
   const customerId = req.user!.id;
   const existing = await prisma.supportCase.findUnique({ where: { id }, select: { id: true, customerId: true } });
@@ -58,14 +61,28 @@ router.post('/cases', run(async (req, res) => {
     successResponse(res, { id });
     return;
   }
-  const summary = await summarizeSupport(messages);
+  let created = false;
   try {
-    await prisma.supportCase.create({
-      data: { id, customerId, summary: summary.text, generated: summary.generated, messages: { create: messages } },
+    await prisma.$transaction(async tx => {
+      await tx.supportCase.create({
+        data: { id, customerId, summary: 'Клиент обратился к менеджеру.', generated: false, messages: { create: messages } },
+      });
+      await tx.auditLog.create({ data: {
+        userId: customerId, action: 'support_handoff', entityType: 'support_case', entityId: id,
+        details: { consent: consentProof('support') }, ip: req.ip,
+      } });
     });
+    created = true;
   } catch (error) {
     if (!(error instanceof Prisma.PrismaClientKnownRequestError) || error.code !== 'P2002'
       || !await prisma.supportCase.findFirst({ where: { id, customerId }, select: { id: true } })) throw error;
+  }
+  // Persist consent before any optional AI processing or third-party request.
+  if (created) {
+    try {
+      const summary = await summarizeSupport(messages);
+      await prisma.supportCase.update({ where: { id }, data: { summary: summary.text, generated: summary.generated } });
+    } catch { /* The accepted case remains available to staff if summarization fails. */ }
   }
   successResponse(res, { id }, 201);
 }));

@@ -78,6 +78,7 @@
     if(handoffDialog.open)return;
     const user=API.getUser();
     handoffStatus.textContent='';
+    handoffForm.reset();
     handoffButton.textContent=user&&!user.isDemo?'Позвать менеджера':'Войти и продолжить';
     handoffDialog.showModal();
   }
@@ -85,6 +86,7 @@
   handoffForm.addEventListener('submit',async event=>{
     event.preventDefault();
     if(transferring)return;
+    if(!handoffForm.elements.consent.checked){handoffStatus.textContent='Подтвердите согласие на передачу обращения.';return;}
     const user=API.getUser(),chat=active();
     if(!user||user.isDemo){
       const back=new URL(location.href);
@@ -105,7 +107,7 @@
       .slice(-40).map(message=>({author:message.role==='user'?'CUSTOMER':'GUARDEX',body:message.text.slice(0,4000)}));
     try {
       const response=await API.fetch('/api/support/cases',{
-        method:'POST',body:JSON.stringify({id,messages}),signal:AbortSignal.timeout(20000),
+        method:'POST',body:JSON.stringify({id,messages,consent:{accepted:handoffForm.elements.consent.checked,version:'2026-11-18-v1',purpose:'support'}}),signal:AbortSignal.timeout(20000),
       });
       const result=await response.json();
       if(!response.ok||!result.success)throw Error(result.error?.message||'Не удалось подключить менеджера.');

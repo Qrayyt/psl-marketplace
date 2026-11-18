@@ -7,17 +7,17 @@
   <link rel="icon" href="assets/images/psl-logo.svg" type="image/svg+xml">
   <link rel="stylesheet" href="assets/css/assistant.css?v=20261117-nav">
   <script defer src="assets/js/data.js"></script>
-  <script defer src="assets/js/api.js?v=20261116-1"></script>
+  <script defer src="assets/js/api.js?v=20261118-consent"></script>
   <script defer src="assets/js/assistant-catalog.js?v=20261111-g1"></script>
   <script defer src="assets/vendor/marked.umd.js"></script>
   <script defer src="assets/vendor/purify.min.js"></script>
   <script defer src="assets/js/assistant-format.js?v=20261118-md"></script>
   <script defer src="assets/js/assistant-blocks.js?v=20261118-md"></script>
-  <script defer src="assets/js/assistant.js?v=20261118-md"></script>
+  <script defer src="assets/js/assistant.js?v=20261118-consent"></script>
   <link rel="stylesheet" href="/assets/css/site-nav.css?v=20261118-3">
   <link rel="canonical" href="https://store.polymer-system.ru/ai-chat.html">
   <script defer src="/assets/js/site-nav.js?v=20261118-2"></script>
-  <link rel="stylesheet" href="assets/css/assistant-ui.css?v=20261118-md">
+  <link rel="stylesheet" href="assets/css/assistant-ui.css?v=20261118-consent">
   <link rel="stylesheet" href="/assets/css/legal.css?v=20261118-1">
   <script defer src="/assets/js/privacy-ui.js?v=20261118-1"></script>
 </head>
@@ -50,6 +50,7 @@
     <p>Передадим сотрудникам PSL последние сообщения из этого чата и контакты из вашего профиля.</p>
     <p data-handoff-status role="status"></p>
     <form data-handoff-form>
+      <label class="handoff-consent"><input type="checkbox" name="consent" required><span>Даю <a href="/consent.html#support" target="_blank" rel="noopener">согласие на передачу контактов и переписки менеджеру PSL</a>. <a href="/privacy.html" target="_blank" rel="noopener">Политика</a></span></label>
       <button type="button" data-handoff-cancel>Отмена</button>
       <button type="submit" class="primary" data-handoff-submit>Позвать менеджера</button>
     </form>

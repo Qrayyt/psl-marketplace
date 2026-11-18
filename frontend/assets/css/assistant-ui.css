@@ -128,3 +128,7 @@
 }
 @media (max-width: 360px) { .psl-chat-page .suggestions button { display: flex; flex-direction: column; gap: 6px; } .psl-chat-page .composer-context { display: none; } .psl-chat-page .composer-end { margin-left: auto; } }
 @media (prefers-reduced-motion: reduce) { .material-card { transition: none; } }
+
+.handoff-dialog .handoff-consent { display: flex; align-items: flex-start; gap: 10px; width: 100%; font-size: 13px; line-height: 1.6; margin: 6px 0 14px; }
+.handoff-consent input { flex: none; width: 17px; height: 17px; margin-top: 3px; accent-color: #171717; }
+.handoff-consent a { text-decoration: underline; text-underline-offset: 3px; }

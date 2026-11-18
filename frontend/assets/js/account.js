@@ -123,7 +123,7 @@
           ${field('Электронная почта', 'email', u.email, 'email', 'maxlength="254" autocomplete="email"')}
           ${field('Компания', 'company', '', 'text', 'maxlength="160" autocomplete="organization"')}
           <label class="account-field full">Комментарий<textarea name="note" maxlength="2000" placeholder="Объект, город, сроки или удобное время для звонка"></textarea></label>
-          <label class="account-check full"><input type="checkbox" required><span>Согласен с <a href="privacy.html" target="_blank" rel="noopener">обработкой персональных данных</a></span></label>
+          <label class="account-check full"><input type="checkbox" name="consent" required><span>Даю <a href="/consent.html#order" target="_blank" rel="noopener">согласие на обработку данных для заказа</a>. <a href="/privacy.html" target="_blank" rel="noopener">Политика</a></span></label>
         </div><div class="form-actions"><button class="account-button solid" type="submit">Отправить заказ</button><p class="form-message" role="status"></p></div></form>`);
       const form = dialog.querySelector('[data-form="checkout"]');
       form.checkout = {
@@ -178,10 +178,12 @@
         }
         case 'checkout': {
           if (!form.checkout || form.submitting) return;
+          if (!form.elements.consent.checked) throw Error('Подтвердите согласие на обработку данных заказа.');
           form.submitting = true;
           try {
             const order = await request('/api/orders', { method: 'POST', body: JSON.stringify({
               ...form.checkout,
+              consent: { accepted: form.elements.consent.checked, version: '2026-11-18-v1', purpose: 'order' },
               contact: { name: data.name, phone: data.phone, email: data.email.trim() || undefined, company: data.company, note: data.note },
             }) });
             if (form.isConnected) dialog.close();
