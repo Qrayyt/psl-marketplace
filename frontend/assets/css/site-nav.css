@@ -1,0 +1,47 @@
+/* Shared site navigation: a centered Guardex entry on desktop, three tabs on mobile. */
+.psl-site-nav { flex: none; color: #202329; font: 600 14px/1.2 Arial, sans-serif; }
+.psl-site-nav, .psl-site-nav * { box-sizing: border-box; }
+.psl-site-nav-inner { display: flex; align-items: center; justify-content: center; min-height: 68px; padding: 10px 20px; }
+.psl-site-nav .psl-nav-item { display: none; align-items: center; justify-content: center; color: inherit; text-decoration: none; -webkit-tap-highlight-color: transparent; }
+.psl-site-nav .psl-nav-guardex { display: inline-flex; gap: 10px; min-height: 44px; padding: 7px 10px 7px 8px; border: 1px solid #e5e7eb; border-radius: 30px; background: #fff; box-shadow: 0 2px 8px #152b4410; transition: box-shadow .18s, border-color .18s; }
+.psl-site-nav .psl-nav-guardex:hover { border-color: #c8d4e0; box-shadow: 0 4px 16px #152b441a; }
+.psl-nav-icon { display: grid; place-items: center; flex: none; width: 30px; height: 30px; border-radius: 50%; }
+.psl-nav-icon svg { display: block; width: 22px; height: 22px; }
+.psl-nav-guardex .psl-nav-icon { color: #fff; background: #181c23; }
+.psl-nav-label { font-size: 15px; letter-spacing: -.25px; }
+.psl-nav-caption { padding-left: 10px; border-left: 1px solid #e5e7eb; color: #7a818b; font-size: 11px; font-weight: 400; }
+.psl-nav-arrow { display: grid; place-items: center; width: 27px; height: 27px; margin-left: 8px; background: #f3f5f7; border-radius: 50%; font-size: 16px; }
+.psl-nav-guardex[aria-current] { border-color: #cce2fa; background: #f7fbff; }
+.psl-site-nav .psl-nav-item:focus-visible { outline: 2px solid #2389d7; outline-offset: 4px; }
+
+@media (max-width: 760px) {
+  :root { --psl-nav-space: calc(104px + env(safe-area-inset-bottom, 0px)); }
+  html { scroll-padding-bottom: var(--psl-nav-space); }
+  body.psl-has-site-nav { padding-bottom: var(--psl-nav-space); }
+  .psl-site-nav { position: fixed; z-index: 35; left: 50%; bottom: calc(14px + env(safe-area-inset-bottom, 0px)); width: min(420px, calc(100% - 32px)); transform: translateX(-50%); border: 1px solid #ffffffd9; border-radius: 38px; background: #fffffff2; box-shadow: 0 8px 32px #152b4426, 0 1px 5px #152b4414; -webkit-backdrop-filter: blur(20px); backdrop-filter: blur(20px); }
+  .psl-site-nav-inner { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; min-height: 74px; padding: 6px; }
+  .psl-site-nav .psl-nav-item, .psl-site-nav .psl-nav-guardex { display: flex; flex-direction: column; gap: 3px; min-width: 0; min-height: 60px; padding: 6px 4px; border: 0; border-radius: 30px; background: transparent; box-shadow: none; color: #737b85; }
+  .psl-nav-icon { width: 26px; height: 26px; }
+  .psl-nav-icon svg { width: 24px; height: 24px; }
+  .psl-nav-guardex .psl-nav-icon { background: transparent; color: inherit; }
+  .psl-nav-label { font-size: 11px; font-weight: 600; letter-spacing: 0; }
+  .psl-nav-caption, .psl-nav-arrow { display: none; }
+  .psl-site-nav .psl-nav-item[aria-current] { color: #fff; background: #171717; }
+  .psl-site-nav .psl-nav-item:hover { background: #f0f5fa; box-shadow: none; }
+  .psl-site-nav .psl-nav-item[aria-current]:hover { background: #303030; }
+  .psl-site-nav .psl-nav-item:focus-visible { outline-offset: -2px; }
+  .psl-has-site-nav .toast-wrap, .psl-has-site-nav .account-notices, .psl-has-site-nav .toast { bottom: var(--psl-nav-space); }
+  .psl-has-site-nav .market-actions > a[aria-label="Личный кабинет"] { display: none; }
+  .psl-chat-page .workspace { height: calc(var(--psl-viewport-height, 100dvh) - var(--psl-nav-space)); }
+  .psl-chat-page .composer-region { padding-bottom: 12px; }
+  .psl-chat-page .sidebar { padding-bottom: max(12px, env(safe-area-inset-bottom, 0px)); }
+  .psl-chat-page.psl-keyboard-open { padding-bottom: 0; }
+  .psl-chat-page.psl-keyboard-open .psl-site-nav { visibility: hidden; pointer-events: none; }
+  .psl-chat-page.psl-keyboard-open .workspace { height: var(--psl-viewport-height, 100dvh); }
+}
+@media (prefers-reduced-motion: reduce) { .psl-site-nav .psl-nav-item { transition: none; } }
+
+.site-error { max-width: 720px; margin: 64px auto; padding: 0 24px; font: 16px/1.6 Arial, sans-serif; color: #272727; }
+.site-error h1 { font-size: clamp(28px, 5vw, 40px); line-height: 1.2; }
+.site-error input { box-sizing: border-box; display: block; width: 100%; padding: 12px; margin-top: 8px; border: 1px solid #ccc; border-radius: 8px; font: inherit; }
+.site-error button { padding: 12px 20px; background: #272727; color: #fff; border: 0; border-radius: 8px; font: inherit; cursor: pointer; }

@@ -54,3 +54,8 @@
   border-radius:9px; cursor:pointer;
 }
 @media(max-width:450px) { .topbar-right .back-catalog { display:none; } }
+
+@media (max-width: 420px) {
+  .model > span { display: none; }
+  .manager-trigger { padding-inline: 8px; }
+}

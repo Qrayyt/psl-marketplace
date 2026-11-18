@@ -132,7 +132,7 @@
         '<input type="text" name="address" placeholder="Адрес доставки" required>' +
         '<input type="text" name="postalCode" placeholder="Почтовый индекс">' +
         '<select name="deliveryMethod"><option value="courier">Курьер</option><option value="pickup">Самовывоз</option><option value="post">Почта России</option></select>' +
-        '<label class="auth-checkbox"><input type="checkbox" required> Согласен с <a href="privacy.html" target="_blank">обработкой персональных данных</a></label>' +
+        '<label class="auth-checkbox"><input type="checkbox" name="consent" required> Даю <a href="/consent.html#order" target="_blank" rel="noopener">согласие на обработку данных для заказа</a></label>' +
         '<div class="auth-error" data-checkout-error></div>' +
         '<button type="submit" class="primary-btn">Подтвердить заказ</button>' +
       '</form></div>';
@@ -147,11 +147,13 @@
       var err = form.querySelector('[data-checkout-error]');
       err.textContent = '';
 
+      if(!form.elements.consent.checked){err.textContent='Подтвердите согласие на обработку данных.';return;}
       API.fetch('/api/orders', {
         method: 'POST',
         body: JSON.stringify({
           address: { city: form.city.value, address: form.address.value, postalCode: form.postalCode.value },
           deliveryMethod: form.deliveryMethod.value,
+          consent: {accepted: form.elements.consent.checked, version:'2026-11-18-v1', purpose:'order'},
         })
       }).then(function(r){ return r.json(); }).then(function(data){
         if(!data.success){ err.textContent = data.error.message; return; }
@@ -162,22 +164,6 @@
         // Перезагрузить страницу
         setTimeout(function(){ window.location.reload(); }, 1500);
       });
-    };
-  }
-
-  // --- Cookie-баннер ---
-  function showCookieBanner(){
-    if(localStorage.getItem('psl_cookies_accepted')) return;
-
-    var banner = document.createElement('div');
-    banner.className = 'cookie-banner';
-    banner.innerHTML = '<span>Мы используем cookie для работы сайта. <a href="privacy.html">Подробнее</a></span>' +
-      '<button class="primary-btn" style="padding:6px 16px;font-size:13px" data-accept-cookies>Принять</button>';
-    document.body.appendChild(banner);
-
-    banner.querySelector('[data-accept-cookies]').onclick = function(){
-      localStorage.setItem('psl_cookies_accepted', '1');
-      banner.remove();
     };
   }
 
@@ -394,7 +380,6 @@
   document.addEventListener('DOMContentLoaded', function(){
     updateAuthUI();
     initCheckout();
-    showCookieBanner();
     initPromoField();
     initCatalogPagination();
     loadDynamicCategories();

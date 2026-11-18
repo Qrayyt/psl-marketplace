@@ -10,8 +10,8 @@ button,input,textarea { font:inherit; }
 button { cursor:pointer; }
 button:disabled { opacity:.55; cursor:wait; }
 button:focus-visible,a:focus-visible,textarea:focus-visible,input:focus-visible { outline:2px solid #303030; outline-offset:2px; }
-.support-header { display:flex; align-items:center; justify-content:space-between; min-height:68px; padding:12px clamp(16px,5vw,60px); border-bottom:1px solid var(--line); }
-.support-header nav { display:flex; align-items:center; gap:18px; }
+.support-header { display:flex; gap:12px; align-items:center; justify-content:space-between; min-height:68px; padding:12px clamp(16px,5vw,60px); border-bottom:1px solid var(--line); }
+.support-header nav { display:flex; align-items:center; flex-wrap:wrap; justify-content:flex-end; gap:8px 18px; }
 .brand { display:flex; }
 .support-main { max-width:1280px; margin:auto; padding:32px clamp(16px,4vw,52px); }
 .page-top { display:flex; align-items:end; justify-content:space-between; gap:12px; margin-bottom:20px; }
@@ -70,6 +70,10 @@ dialog::backdrop { background:#0006; }
   .support-layout { grid-template-columns:minmax(0,1fr); }
   .case-panel { max-height:45vh; }
   .support-main { padding-top:21px; }
-  .room { height:65vh; }
+  .page-top { flex-wrap:wrap; align-items:start; }
+  .status-chip { max-width:100%; }
+  .support-header nav { gap:8px 12px; }
+  .room { height:clamp(360px,65dvh,650px); }
+  .compose textarea,.team-form input { font-size:16px; }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { animation:none !important; transition:none !important; } }

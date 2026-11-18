@@ -6,7 +6,7 @@ echo "=== 1. HEALTH ==="
 curl -s $BASE/api/health | python3 -c "import sys,json; print(json.load(sys.stdin)['success'])"
 
 echo "=== 2. РЕГИСТРАЦИЯ ==="
-REG=$(curl -s -X POST $BASE/api/auth/register -H 'Content-Type: application/json' -d '{"email":"e2etest@test.ru","password":"test123","name":"E2E Tester"}')
+REG=$(curl -s -X POST $BASE/api/auth/register -H 'Content-Type: application/json' -d '{"email":"e2etest@test.ru","password":"test123","name":"E2E Tester","consent":{"accepted":true,"version":"2026-11-18-v1","purpose":"registration"}}')
 echo $REG | python3 -c "import sys,json; d=json.load(sys.stdin); print('OK' if d['success'] else d['error']['message'])"
 TOKEN=$(echo $REG | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['accessToken'])" 2>/dev/null)
 
@@ -48,7 +48,7 @@ echo $ADDR | python3 -c "import sys,json; d=json.load(sys.stdin); print('OK' if 
 ADDR_ID=$(echo $ADDR | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['id'])" 2>/dev/null)
 
 echo "=== 13. ЗАКАЗ ==="
-ORDER=$(curl -s -X POST $BASE/api/orders -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d "{\"addressId\":\"$ADDR_ID\",\"deliveryMethod\":\"courier\"}")
+ORDER=$(curl -s -X POST $BASE/api/orders -H "Authorization: Bearer $TOKEN" -H 'Content-Type: application/json' -d "{\"addressId\":\"$ADDR_ID\",\"deliveryMethod\":\"courier\",\"consent\":{\"accepted\":true,\"version\":\"2026-11-18-v1\",\"purpose\":\"order\"}}")
 echo $ORDER | python3 -c "import sys,json; d=json.load(sys.stdin); print('OK: %s' % d['data']['orderNumber'] if d['success'] else d['error']['message'])"
 ORDER_ID=$(echo $ORDER | python3 -c "import sys,json; print(json.load(sys.stdin)['data']['id'])" 2>/dev/null)
 

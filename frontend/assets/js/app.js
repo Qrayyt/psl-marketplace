@@ -171,7 +171,9 @@
   }
   function cardHtml(p){
     const id=escapeHtml(p.id), name=escapeHtml(p.name), href='product.html?id='+encodeURIComponent(p.id);
-    return `<article class="product-card"><div class="card-media${p.logoOnly?' logo-only':''}" data-caption="${escapeHtml(p.category)}"><a class="card-link" href="${href}" aria-label="${name}"><img src="${escapeHtml(p.image || p.imageUrl || 'assets/images/psl-logo.svg')}" alt="${name}" width="360" height="280" loading="lazy" decoding="async"></a><div class="card-actions"><button class="card-fab ${inFavs(p.id)?'active':''}" type="button" data-fav="${id}" aria-label="${inFavs(p.id)?'Убрать из избранного':'В избранное'}: ${name}" aria-pressed="${inFavs(p.id)}">${iconHeart()}</button></div></div><div class="card-body"><h3 class="card-name"><a href="${href}">${name}</a></h3><p class="card-description">${escapeHtml(p.description || p.category)}</p>${Number(p.price)>0?`<div class="card-price">${fmtPrice(p.price)}</div>`:''}<button class="add-btn" type="button" data-cart-main="${id}" ${Number(p.price)>0?'':'disabled'}>${iconCart()}<span>В корзину</span></button></div></article>`;
+    const description = p.description || (p.category === 'Без категории' ? '' : p.category);
+    const hasPrice = Number(p.price) > 0;
+    return `<article class="product-card"><div class="card-media${p.logoOnly?' logo-only':''}" data-caption="${escapeHtml(p.category)}"><a class="card-link" href="${href}" aria-label="${name}"><img src="${escapeHtml(p.image || p.imageUrl || 'assets/images/psl-logo.svg')}" alt="${name}" width="360" height="280" loading="lazy" decoding="async"></a><div class="card-actions"><button class="card-fab ${inFavs(p.id)?'active':''}" type="button" data-fav="${id}" aria-label="${inFavs(p.id)?'Убрать из избранного':'В избранное'}: ${name}" aria-pressed="${inFavs(p.id)}">${iconHeart()}</button></div></div><div class="card-body"><h3 class="card-name"><a href="${href}">${name}</a></h3>${description ? `<p class="card-description">${escapeHtml(description)}</p>` : ''}<div class="card-price">${hasPrice ? fmtPrice(p.price) : 'Цена по запросу'}</div>${hasPrice ? `<button class="add-btn" type="button" data-cart-main="${id}">${iconCart()}<span>В корзину</span></button>` : `<a class="add-btn" href="${href}">Подробнее</a>`}</div></article>`;
   }
 
   function bindCardEvents(root){
@@ -253,6 +255,8 @@
     const p = getProduct(id);
     if(!p){ root.innerHTML = '<div class="empty-state">Материал не найден или каталог временно недоступен. <a class="text-link" href="index.html#catalog">Вернуться к каталогу ↗</a></div>'; return; }
     document.title = `${p.name} — PSL`;
+    const hasPrice = Number(p.price) > 0;
+    const priceRequest = 'mailto:info@polymer-system.ru?subject=' + encodeURIComponent('Запрос цены: ' + p.name);
 
     root.innerHTML = `
       <div class="product-layout">
@@ -274,8 +278,8 @@
           </div>
           <h1 class="product-title">${escapeHtml(p.name)}</h1>
           <div class="rating-row">${p.rating ? `★ ${p.rating} · ${p.reviews || 0} отзывов · ` : ''}${escapeHtml(p.color)}</div>
-          <div class="product-price">${fmtPrice(p.price)} ${p.oldPrice ? `<span class="old-price" style="font-size:18px;margin-left:8px">${fmtPrice(p.oldPrice)}</span>` : ''}</div>
-          <p class="product-copy">${escapeHtml(p.description)}</p>
+          <div class="product-price">${hasPrice ? fmtPrice(p.price) : 'Цена по запросу'} ${hasPrice && p.oldPrice ? `<span class="old-price" style="font-size:18px;margin-left:8px">${fmtPrice(p.oldPrice)}</span>` : ''}</div>
+          ${p.description ? `<p class="product-copy">${escapeHtml(p.description)}</p>` : ''}
 
           ${p.sizes?.length ? `<div class="option-block">
             <div class="option-label">Вариант / фасовка</div>
@@ -296,9 +300,9 @@
           <div class="option-block" data-product-documents hidden></div>
           ${p.sourceUrl ? `<a class="source-link" href="${escapeHtml(p.sourceUrl)}" target="_blank" rel="noopener">Информация о материале ↗</a>` : ''}
           <div class="action-row">
-            <button class="primary-btn" type="button" data-buy-product="${escapeHtml(p.id)}" ${Number(p.price)>0?'':'disabled'}>
+            ${hasPrice ? `<button class="primary-btn" type="button" data-buy-product="${escapeHtml(p.id)}">
               ${iconCart()} Добавить в корзину
-            </button>
+            </button>` : `<a class="primary-btn" href="${escapeHtml(priceRequest)}">Запросить цену</a>`}
             <button class="ghost-btn ${inFavs(p.id) ? 'active-ish' : ''}" type="button" data-fav-product="${p.id}">
               ${iconHeart()} ${inFavs(p.id) ? 'Убрать из избранного' : 'В избранное'}
             </button>
@@ -333,7 +337,10 @@
 
   async function loadProductDocuments(root, id){
     const section = root.querySelector('[data-product-documents]');
-    const endpoint = (window.PSL_API?.baseUrl || '') + '/api/products/' + encodeURIComponent(id) + '/documents';
+    const api = window.PSL_API;
+    const productPath = '/api/products/' + encodeURIComponent(id);
+    const endpoint = (api?.baseUrl || '') + productPath + '/documents';
+    loadArchivedTechnicalSheets(section, (api?.baseUrl || '') + productPath + '/handbook-documents');
     try {
       const response = await fetch(endpoint, {signal: AbortSignal.timeout(5000)});
       if(!response.ok) return;
@@ -346,6 +353,35 @@
       section.hidden = false;
     } catch {
       // The storefront can still show the product when documents are unavailable.
+    }
+  }
+
+  async function loadArchivedTechnicalSheets(section, endpoint){
+    try {
+      const response = await fetch(endpoint, {signal: AbortSignal.timeout(5000)});
+      if(!response.ok) return;
+      const {data} = await response.json();
+      if(!section?.isConnected || !Array.isArray(data) || !data.length) return;
+      const archive = document.createElement('div');
+      archive.className = 'option-block archived-technical-sheets';
+      const title = document.createElement('div');
+      title.className = 'option-label';
+      title.textContent = 'Архивные техкарты';
+      const list = document.createElement('ul');
+      list.className = 'detail-list';
+      archive.append(title, list);
+      for(const doc of data){
+        const item = document.createElement('li');
+        const link = document.createElement('a');
+        link.className = 'source-link';
+        link.href = endpoint + '/' + encodeURIComponent(doc.id);
+        link.textContent = doc.filename + ' ↓';
+        item.append(link);
+        list.append(item);
+      }
+      section.after(archive);
+    } catch {
+      // Archived sheets are optional on product pages.
     }
   }
 

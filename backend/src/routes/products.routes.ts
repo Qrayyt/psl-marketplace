@@ -1,3 +1,4 @@
+import { productHandbookRoutes } from './handbook.routes';
 import { listProductDocuments, downloadProductDocument } from '../controllers/product-documents.controller';
 import { Router } from 'express';
 import { listProducts, getProduct, getCategories, getAllProducts } from '../controllers/products.controller';
@@ -66,6 +67,7 @@ router.get('/all', getAllProducts);
  *     summary: Карточка товара
  *     tags: [Каталог]
  */
+router.use('/:id/handbook-documents', productHandbookRoutes);
 router.get('/:id/documents', listProductDocuments);
 router.get('/:id/documents/:documentId', downloadProductDocument);
 router.get('/:id', optionalAuth, getProduct);

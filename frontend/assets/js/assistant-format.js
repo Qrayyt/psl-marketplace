@@ -1,49 +1,46 @@
-(function(){
+(() => {
   'use strict';
-
-  const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
-  })[char]);
-  const inline = text => text.split(/(\*\*[^*\n]+\*\*|\*[^*\n]+\*|`[^`\n]+`)/g).map(part => {
-    if (part.startsWith('**') && part.endsWith('**') && part.length > 4) return '<strong>' + escape(part.slice(2,-2)) + '</strong>';
-    if (part.startsWith('*') && part.endsWith('*') && part.length > 2) return '<em>' + escape(part.slice(1,-1)) + '</em>';
-    if (part.startsWith('`') && part.endsWith('`') && part.length > 2) return '<code>' + escape(part.slice(1,-1)) + '</code>';
-    return escape(part);
-  }).join('');
-
-  function classify(line){
-    const heading = /^(#{1,4})\s+(.+)$/.exec(line);
-    if (heading) return { type: heading[1].length > 2 ? 'h3' : 'h2', text: heading[2] };
-    const bullet = /^[-*]\s+(.+)$/.exec(line);
-    if (bullet) return { type: 'ul', text: bullet[1] };
-    const step = /^([0-9]{1,4})\.\s+(.+)$/.exec(line);
-    if (step) return { type: 'ol', text: step[2], start: Number(step[1]) };
-    const note = /^>\s*(.+)$/.exec(line);
-    if (note) return { type: 'blockquote', text: note[1] };
-    return { type: line ? 'p' : '', text: line };
+  const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const parser = new window.marked.Marked({ gfm: true, breaks: false });
+  // HTML supplied in a response is displayed as text, never treated as a component.
+  parser.use({ renderer: { html(token) { return escape(token.text); } } });
+  function safeUrl(value) {
+    if (typeof value !== 'string' || !value.trim()) return null;
+    try {
+      const url = new URL(value, location.href);
+      return ['http:', 'https:', 'mailto:', 'tel:'].includes(url.protocol) ? url.href : null;
+    } catch { return null; }
   }
-
-  function render(text){
-    const output = [];
-    let group = [];
-    function flush(){
-      if (!group.length) return;
-      const { type, start } = group[0];
-      const list = type === 'ul' || type === 'ol';
-      const content = list
-        ? group.map(line => '<li>' + inline(line.text) + '</li>').join('')
-        : group.map(line => inline(line.text)).join('<br>');
-      const attrs = type === 'ol' && start > 1 ? ' start="' + start + '"' : '';
-      output.push('<' + type + attrs + '>' + content + '</' + type + '>');
-      group = [];
-    }
-    for (const line of String(text ?? '').replace(/\r\n?/g, '\n').split('\n').map(value => classify(value.trim()))) {
-      if (!line.type || line.type !== group[0]?.type || /^h[23]$/.test(line.type)) flush();
-      if (line.type) group.push(line);
-    }
-    flush();
-    return output.join('');
+  function render(value) {
+    const html = parser.parse(String(value ?? '').slice(0, 100000));
+    const template = document.createElement('template');
+    template.innerHTML = window.DOMPurify.sanitize(html, {
+      ALLOWED_TAGS: ['p','br','h1','h2','h3','h4','h5','h6','strong','em','del','a','ul','ol','li','blockquote','pre','code','hr','table','thead','tbody','tr','th','td','input'],
+      ALLOWED_ATTR: ['href','title','class','start','align','type','checked','disabled'],
+    });
+    template.content.querySelectorAll('a').forEach(a => {
+      const url = safeUrl(a.getAttribute('href'));
+      if (!url) { a.removeAttribute('href'); return; }
+      a.href = url;
+      if (new URL(url).origin !== location.origin) { a.target = '_blank'; a.rel = 'noopener noreferrer'; }
+    });
+    template.content.querySelectorAll('input').forEach(input => {
+      if (input.type !== 'checkbox') input.remove();
+      else { input.disabled = true; input.setAttribute('aria-label', input.checked ? 'Выполнено' : 'Не выполнено'); }
+    });
+    template.content.querySelectorAll('table').forEach(table => {
+      const wrap = document.createElement('div'); wrap.className = 'markdown-table';
+      wrap.tabIndex = 0; wrap.setAttribute('role','region'); wrap.setAttribute('aria-label','Таблица в ответе');
+      table.replaceWith(wrap); wrap.append(table);
+    });
+    template.content.querySelectorAll('pre').forEach(pre => {
+      const wrap = document.createElement('div'); wrap.className = 'markdown-code';
+      const bar = document.createElement('div'); bar.className = 'markdown-code-bar';
+      const label = document.createElement('span'); label.textContent = pre.querySelector('code')?.className.replace('language-','') || 'Код';
+      const copy = document.createElement('button'); copy.type = 'button'; copy.dataset.copyCode = ''; copy.textContent = 'Скопировать'; copy.setAttribute('aria-label','Скопировать код');
+      bar.append(label,copy); pre.replaceWith(wrap); wrap.append(bar,pre);
+    });
+    return template.innerHTML;
   }
-
-  window.PSLChatFormat = Object.freeze({ render });
+  window.PSLChatFormat = Object.freeze({ render, escape, safeUrl });
 })();

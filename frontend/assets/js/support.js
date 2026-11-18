@@ -28,9 +28,9 @@
     const response = await API.fetch(path, {
       method, ...(body && {body:JSON.stringify(body)}), cache:'no-store', signal:AbortSignal.timeout(20000),
     });
-    const result = await response.json();
-    if (!response.ok || !result.success) {
-      const error = new Error(result.error?.message || 'Не удалось выполнить действие.');
+    const result = await response.json().catch(() => null);
+    if (!response.ok || !result?.success) {
+      const error = new Error(result?.error?.message || 'Не удалось выполнить действие. Попробуйте ещё раз.');
       error.status = response.status;
       throw error;
     }
@@ -87,7 +87,7 @@
     const badge = $('[data-status]');
     badge.hidden = false;
     badge.dataset.state = conversation.status;
-    badge.textContent = statusNames[conversation.status];
+    if (badge.textContent !== statusNames[conversation.status]) badge.textContent = statusNames[conversation.status];
     if (staff) renderProfile(conversation);
 
     let label = 'Менеджер ещё не подключился';
@@ -144,6 +144,7 @@
     if (!pending || pending.body !== text) pending = { key:crypto.randomUUID(), body:text };
     sending = true;
     const button = compose.querySelector('button');
+    const restoreFocus = document.activeElement === button;
     button.disabled = true;
     feedback.textContent = '';
     delete feedback.dataset.pollError;
@@ -153,7 +154,11 @@
       pending = undefined;
       await refresh();
     } catch (error) { feedback.textContent = error.message; }
-    finally { sending = false; button.disabled = false; }
+    finally {
+      sending = false;
+      button.disabled = false;
+      if (restoreFocus && !compose.hidden && document.activeElement === document.body) input.focus();
+    }
   });
 
   async function loadTeam(){

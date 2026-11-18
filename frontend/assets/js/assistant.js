@@ -24,33 +24,79 @@
   chats=storedChats(key);
   const product=id=>(window.PRODUCTS||[]).find(p=>p.id===id||p.catalogSlug===id);
   const href=id=>'product.html?id='+encodeURIComponent(id);
-  function imageUrl(value){try{const u=new URL(value,location.href);return u.origin===location.origin&&/^https?:$/.test(u.protocol)?u.href:'assets/images/psl-logo.svg';}catch{return 'assets/images/psl-logo.svg';}}
-  const resolveIds=b=>Array.isArray(b.ids)?[...new Set(b.ids)].map(product).filter(Boolean).slice(0,3):[];
-  const price=p=>Number(p.price)>0?new Intl.NumberFormat('ru-RU',{style:'currency',currency:'RUB',maximumFractionDigits:2}).format(p.price):'Цена не опубликована';
-  function card(p){return `<a class="product-card" href="${href(p.id)}" aria-label="Открыть ${esc(p.name)}"><div class="product-image ${p.logoOnly?'logo-only':''}"><img src="${esc(imageUrl(p.image))}" alt="${esc(p.name)}" loading="lazy"></div><div class="product-copy"><small>${esc(p.brand)}</small><h3>${esc(p.name)}</h3><p>${esc(p.category === 'Без категории' ? '' : p.category)}</p><strong class="guardex-card-price">${esc(price(p))}</strong><div class="product-footer">Открыть материал<i>${icon('arrow')}</i></div></div></a>`;}
-  const visualHead=title=>`<div class="visual-heading">${icon('spark')}<span>${title}</span></div>`;
-  const footer='<div class="block-footer">Из каталога PSL<a href="index.html#catalog">Весь каталог '+icon('arrow')+'</a></div>';
-  const renderers={
-    products(b){const list=resolveIds(b);return list.length?`<section class="visual-block" aria-label="Материалы из каталога">${visualHead('Материалы PSL')}<div class="product-grid count-${list.length}">${list.map(card).join('')}</div>${footer}</section>`:'';},
-    comparison(b){const list=resolveIds(b).slice(0,2);if(list.length<2)return '';return `<section class="visual-block" aria-label="Сравнение материалов">${visualHead('Сравнение материалов')}<div class="compare-scroll"><table class="compare-table"><caption class="sr-only">Данные из карточек каталога PSL</caption><tbody><tr class="compare-name"><th scope="row">Материал</th>${list.map(p=>`<td><img src="${esc(imageUrl(p.image))}" alt=""><a href="${href(p.id)}">${esc(p.name)}</a></td>`).join('')}</tr>${[['Бренд',p=>p.brand],['Категория',p=>p.category],['Формат / фасовка',p=>(p.sizes||[]).join(', ')||'Уточнить у PSL'],['Цена',price],['Описание',p=>p.description]].map(([label,get])=>`<tr><th scope="row">${label}</th>${list.map(p=>`<td>${esc(get(p))}</td>`).join('')}</tr>`).join('')}</tbody></table></div>${footer}</section>`;},
-    floor(b){const list=resolveIds(b);if(!list.length)return '';const labels=['Промышленная плитка','Клей / затирка','Грунтовка'];const tiles=[{y:16,fill:'#dededb',side:'#b9b9b6'},{y:49,fill:'#d2d2ce',side:'#adadaa'},{y:75,fill:'#e9e9e6',side:'#c5c5c2'}];return `<section class="visual-block" aria-label="Иллюстрация слоёв пола">${visualHead('Слои промышленного пола')}<div class="system-layout"><div class="floor-visual"><svg viewBox="0 0 310 230" role="img" aria-label="Три слоя над бетонным основанием. Нажмите на слой, чтобы открыть материал."><path d="m28 158 145-47 111 42-146 52z" fill="#c7c7c5" stroke="#b6b6b3"/><path d="m28 158 110 47v22L28 180z" fill="#aaa9a6"/><path d="m138 205 146-52v22l-146 52z" fill="#bbbcb9"/>${[...list].reverse().map(p=>{const i=list.indexOf(p),{y,fill,side}=tiles[i];return `<a href="${href(p.id)}" aria-label="${labels[i]}: ${esc(p.name)}"><path d="m28 ${72+y} 145-47 111 42-146 52z" fill="${fill}" stroke="#b9b9b6"/><path d="m28 ${72+y} 110 47v9L28 ${81+y}z" fill="${side}"/><path d="m138 ${119+y} 146-52v9l-146 52z" fill="${side}"/>${i===0?`<path d="m100 ${49+y} 111 43M173 ${25+y}l-35 94M28 ${72+y}l145-47" fill="none" stroke="#aaa" stroke-width="1"/>`:''}<circle cx="264" cy="${82+y}" r="10" fill="#fff" stroke="#ccc"/><text x="264" y="${86+y}" text-anchor="middle" font-size="10" font-family="Arial" fill="#555">${i+1}</text></a>`;}).join('')}</svg></div><div class="layer-list">${list.map((p,i)=>`<a class="layer-link" href="${href(p.id)}"><span class="layer-number">${i+1}</span><span><strong>${labels[i]}</strong><small>${esc(p.name)}</small></span><i>${icon('arrow')}</i></a>`).join('')}<div class="layer-link"><span class="layer-number">4</span><span><strong>Бетонное основание</strong><small>Подготовленная поверхность</small></span></div></div></div><p class="scheme-note">Условная иллюстрация, без масштаба и толщин. Состав и совместимость системы уточняются по технической документации.</p></section>`;}
-  };
-  // Structured, allowlisted components: model responses never enter innerHTML as executable markup.
-  function blocks(items){return Array.isArray(items)?items.slice(0,4).map(b=>b&&Object.hasOwn(renderers,b.type)?renderers[b.type](b):'').join(''):'';}
+  const blocks = items => window.PSLChatBlocks.render(items);
   function active(){return chats.find(c=>c.id===current);}
   function save(){try{localStorage.setItem(key,JSON.stringify(chats.slice(0,40)));}catch{toast('История не сохранена: хранилище браузера недоступно.');}}
   function toast(text){clearTimeout(toastTimer);const el=document.querySelector('.toast');el.textContent=text;el.classList.add('visible');toastTimer=setTimeout(()=>el.classList.remove('visible'),2600);}
-  function renderHistory(){history.innerHTML=chats.filter(c=>c.title.toLowerCase().includes(filter)).map(c=>`<div class="history-item ${c.id===current?'active':''}"><button class="history-open" data-chat="${esc(c.id)}" ${c.id===current?'aria-current="true"':''} title="${esc(c.title)}">${esc(c.title)}</button><button class="history-delete" data-delete="${esc(c.id)}" aria-label="Удалить чат ${esc(c.title)}">${icon('trash')}</button></div>`).join('')||`<p class="history-empty">${filter?'Чаты не найдены.':'Здесь появятся ваши диалоги.'}</p>`;}
+  function renderHistory(){const html=chats.filter(c=>c.title.toLowerCase().includes(filter)).map(c=>`<div class="history-item ${c.id===current?'active':''}"><button class="history-open" data-chat="${esc(c.id)}" ${c.id===current?'aria-current="true"':''} title="${esc(c.title)}">${esc(c.title)}</button><button class="history-delete" data-delete="${esc(c.id)}" aria-label="Удалить чат ${esc(c.title)}">${icon('trash')}</button></div>`).join('')||`<p class="history-empty">${filter?'Чаты не найдены.':'Здесь появятся ваши диалоги.'}</p>`;if(history.__markup!==html){history.innerHTML=html;history.__markup=html;}}
   function actions(m,i){return `<div class="message-actions"><button class="icon-btn" data-copy="${i}" aria-label="Скопировать ответ" title="Скопировать">${icon('copy')}</button><button class="icon-btn ${m.liked?'selected':''}" data-like="${i}" aria-label="Полезный ответ" aria-pressed="${!!m.liked}" title="Полезно">${icon('thumb')}</button><button class="icon-btn" data-retry="${i}" aria-label="Повторить ответ" title="Повторить">${icon('retry')}</button></div>`;}
   const assistantLabel=`<div class="assistant-label"><span class="mini-logo"><img src="assets/images/psl-logo.svg" alt=""></span>Guardex</div>`;
-  function render(){const chat=active(),messages=chat?.messages||[];welcome.hidden=!!messages.length;thread.hidden=!messages.length;thread.innerHTML=messages.map((m,i)=>m.role==='user'?`<article class="message user-message" aria-label="Ваше сообщение"><div class="user-bubble">${esc(m.text)}</div></article>`:`<article class="message assistant-message" aria-label="Ответ Guardex">${assistantLabel}<div class="answer-text">${format.render(m.text)}</div>${blocks(m.blocks)}${Array.isArray(m.links)?`<div class="followups">${m.links.map(product).filter(Boolean).map(p=>`<a class="plain-product-link" href="${href(p.id)}">${esc(p.name)} ↗</a>`).join('')}</div>`:''}${actions(m,i)}${Array.isArray(m.followups)?`<div class="followups">${m.followups.slice(0,3).map(t=>`<button data-prompt="${esc(t)}">${esc(t)} ${'↗'}</button>`).join('')}</div>`:''}</article>`).join('');if(busy)thread.insertAdjacentHTML('beforeend',`<article class="message pending" role="status" aria-label="Поиск по каталогу">${assistantLabel}<div class="waiting" aria-hidden="true"><span></span><span></span><span></span></div></article>`);document.title=chat?chat.title+' — Guardex':'Guardex — PSL';renderHistory();updateJump();}
-  function bottom(){scroller.scrollTo({top:scroller.scrollHeight,behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'instant':'smooth'});}
-  function updateJump(){document.querySelector('.jump').hidden=scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<160;}
-  function updateInput(){input.style.height='auto';input.style.height=Math.min(input.scrollHeight,145)+'px';send.disabled=!input.value.trim()&&!busy;send.setAttribute('aria-label',busy?'Остановить ответ':'Отправить сообщение');send.innerHTML=busy?'<span style="width:10px;height:10px;background:currentColor;border-radius:2px"></span>':icon('up');}
+  let followLatest = true, scrollFrame = 0, scrollIntentUntil = 0;
+  const positions = new Map();
+  function render(){
+    const chat=active(),messages=chat?.messages||[];
+    const oldTop=scroller.scrollTop;
+    welcome.hidden=!!messages.length;thread.hidden=!messages.length;
+    const markup = messages.map((m,i)=>m.role==='user'?`<article class="message user-message" aria-label="Ваше сообщение"><div class="user-bubble">${esc(m.text)}</div></article>`:`<article class="message assistant-message" aria-label="Ответ Guardex">${assistantLabel}<div class="answer-text">${format.render(m.text)}</div>${blocks(m.blocks)}${Array.isArray(m.links)?`<div class="followups">${m.links.map(product).filter(Boolean).map(p=>`<a class="plain-product-link" href="${href(p.id)}">${esc(p.name)} ↗</a>`).join('')}</div>`:''}${actions(m,i)}${Array.isArray(m.followups)?`<div class="followups">${m.followups.slice(0,3).map(t=>`<button data-prompt="${esc(t)}">${esc(t)} ${'↗'}</button>`).join('')}</div>`:''}</article>`);
+    if(busy)markup.push(`<article class="message pending" role="status" aria-label="Guardex готовит ответ"><div class="waiting" aria-hidden="true"><span></span><span></span><span></span></div></article>`);
+    const existing=new Map([...thread.children].map(node=>[node.dataset.messageKey,node]));
+    markup.forEach((html,index)=>{
+      const key=(chat?.id||'new')+':'+(index<messages.length?index:'pending');
+      let node=existing.get(key);
+      if(!node || node.__markup!==html){
+        const template=document.createElement('template');template.innerHTML=html;
+        const replacement=template.content.firstElementChild;
+        replacement.dataset.messageKey=key;replacement.__markup=html;
+        if(node)node.replaceWith(replacement);
+        node=replacement;
+      }
+      if(thread.children[index]!==node)thread.insertBefore(node,thread.children[index]||null);
+      existing.delete(key);
+    });
+    existing.forEach(node=>node.remove());
+    document.title=chat?chat.title+' — Guardex':'Guardex — PSL';
+    renderHistory();
+    if(followLatest)bottom();else scroller.scrollTop=oldTop;
+    updateJump();
+  }
+  function bottom(force=false){
+    if(force){followLatest=true;scrollIntentUntil=0;}
+    if(!followLatest)return;
+    if(scrollFrame)cancelAnimationFrame(scrollFrame);
+    scrollFrame=requestAnimationFrame(()=>{scrollFrame=0;if(followLatest)scroller.scrollTop=scroller.scrollHeight;updateJump();});
+  }
+  function updateJump(){document.querySelector('.jump').hidden=scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<100;}
+  function updateInput(){
+    input.style.height='0px';
+    const height=Math.max(28,Math.min(input.scrollHeight,144));
+    input.style.height=height+'px';input.style.overflowY=input.scrollHeight>144?'auto':'hidden';
+    send.disabled=!input.value.trim()&&!busy;
+    send.setAttribute('aria-label',busy?'Остановить ответ':'Отправить сообщение');
+    send.innerHTML=busy?'<span style="width:10px;height:10px;background:currentColor;border-radius:2px"></span>':icon('up');
+  }
   function cancel(){clearTimeout(pending);pending=null;busy=false;updateInput();}
-  function openChat(id){cancel();current=id;const target=linked(active());if(target){location.assign(supportLink(target));return;}render();if(innerWidth<=760)setSidebar(false);bottom();}
-  function newChat(){cancel();current=null;filter='';search.value='';input.value='';updateInput();render();if(innerWidth<=760)setSidebar(false);input.focus();}
-  function setSidebar(open){const mobile=innerWidth<=760;if(mobile){document.body.classList.toggle('sidebar-open',open);sidebar.inert=!open;}else{document.body.classList.toggle('sidebar-closed',!open);sidebar.inert=!open;}document.querySelector('.open-sidebar').setAttribute('aria-expanded',String(open));}
+  function rememberPosition(){if(current)positions.set(current,{top:scroller.scrollTop,follow:followLatest});}
+  function openChat(id){
+    rememberPosition();cancel();current=id;
+    const target=linked(active());if(target){location.assign(supportLink(target));return;}
+    const position=positions.get(id);followLatest=position?.follow ?? true;
+    render();if(innerWidth<=760)setSidebar(false);
+    if(followLatest)bottom();else scroller.scrollTop=position.top;
+  }
+  function newChat(){
+    rememberPosition();cancel();current=null;followLatest=true;filter='';search.value='';input.value='';
+    updateInput();render();if(innerWidth<=760)setSidebar(false);
+    input.focus({preventScroll:true});
+  }
+  function setSidebar(open){
+    const mobile=innerWidth<=760;
+    if(mobile){
+      if(open && document.activeElement?.matches('input,textarea'))document.activeElement.blur();
+      document.body.classList.toggle('sidebar-open',open);sidebar.inert=!open;
+      document.querySelector('.workspace').inert=open;
+    }else{document.body.classList.toggle('sidebar-closed',!open);sidebar.inert=!open;}
+    document.querySelector('.open-sidebar').setAttribute('aria-expanded',String(open));
+  }
   function answer(chat, text, prior, visualEnabled){
     busy = true;
     render();
@@ -83,13 +129,14 @@
     }, 250);
     pending = timer;
   }
-  function submit(text){text=String(text||'').trim().slice(0,4000);if(!text||busy||handoffDialog.open)return;let chat=active();if(linked(chat)){location.assign(supportLink(linked(chat)));return;}if(!chat){chat={id:uid(),title:text.slice(0,52),updated:Date.now(),messages:[]};chats.unshift(chat);chats=chats.slice(0,40);current=chat.id;}if(chat.messages.length>=100){toast('Этот чат заполнен. Создайте новый диалог.');return;}const prior=[...chat.messages];chat.messages.push({role:'user',text});chat.updated=Date.now();chats=[chat,...chats.filter(c=>c.id!==chat.id)];input.value='';updateInput();save();answer(chat,text,prior,visual);}
+  function submit(text){text=String(text||'').trim().slice(0,4000);if(!text||busy||handoffDialog.open)return;let chat=active();if(linked(chat)){location.assign(supportLink(linked(chat)));return;}if(!chat){chat={id:uid(),title:text.slice(0,52),updated:Date.now(),messages:[]};chats.unshift(chat);chats=chats.slice(0,40);current=chat.id;}if(chat.messages.length>=100){toast('Этот чат заполнен. Создайте новый диалог.');return;}followLatest=true;scrollIntentUntil=0;const prior=[...chat.messages];chat.messages.push({role:'user',text});chat.updated=Date.now();chats=[chat,...chats.filter(c=>c.id!==chat.id)];input.value='';updateInput();save();answer(chat,text,prior,visual);}
   function openHandoff(){
     const chat=active();
     if(linked(chat)){location.assign(supportLink(linked(chat)));return;}
     if(handoffDialog.open)return;
     const user=API.getUser();
     handoffStatus.textContent='';
+    handoffForm.reset();
     handoffButton.textContent=user&&!user.isDemo?'Позвать менеджера':'Войти и продолжить';
     handoffDialog.showModal();
   }
@@ -97,6 +144,7 @@
   handoffForm.addEventListener('submit',async event=>{
     event.preventDefault();
     if(transferring)return;
+    if(!handoffForm.elements.consent.checked){handoffStatus.textContent='Подтвердите согласие на передачу обращения.';return;}
     const user=API.getUser(),chat=active();
     if(!user||user.isDemo){
       const back=new URL(location.href);
@@ -117,7 +165,7 @@
       .slice(-40).map(message=>({author:message.role==='user'?'CUSTOMER':'GUARDEX',body:message.text.slice(0,4000)}));
     try {
       const response=await API.fetch('/api/support/cases',{
-        method:'POST',body:JSON.stringify({id,messages}),signal:AbortSignal.timeout(20000),
+        method:'POST',body:JSON.stringify({id,messages,consent:{accepted:handoffForm.elements.consent.checked,version:'2026-11-18-v1',purpose:'support'}}),signal:AbortSignal.timeout(20000),
       });
       const result=await response.json();
       if(!response.ok||!result.success)throw Error(result.error?.message||'Не удалось подключить менеджера.');
@@ -135,7 +183,7 @@
 
   form.addEventListener('submit',e=>{e.preventDefault();if(busy){cancel();render();save();toast('Ответ остановлен');return;}submit(input.value);});
   input.addEventListener('input',updateInput);input.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey&&!e.isComposing&&innerWidth>760){e.preventDefault();if(!busy)submit(input.value);}});
-  toggle.addEventListener('click',()=>{visual=!visual;toggle.setAttribute('aria-pressed',String(visual));toggle.querySelector('span').textContent=visual?'Вкл.':'Выкл.';});
+  toggle?.addEventListener('click',()=>{visual=!visual;toggle.setAttribute('aria-pressed',String(visual));toggle.querySelector('span').textContent=visual?'Вкл.':'Выкл.';});
   search.addEventListener('input',()=>{filter=search.value.trim().toLowerCase();renderHistory();});
   document.addEventListener('click',async e=>{const el=e.target.closest('button');if(!el)return;
     if(el.hasAttribute('data-handoff'))openHandoff();
@@ -147,16 +195,42 @@
     if(el.dataset.chat)openChat(el.dataset.chat);
     if(el.dataset.delete){const id=el.dataset.delete,index=chats.findIndex(c=>c.id===id);if(index<0)return;const deleted=chats.splice(index,1)[0];if(current===id){cancel();current=null;}save();render();toast('Чат удалён. Нажмите Ctrl / ⌘ + Z, чтобы вернуть.');undo={chat:deleted,index};}
     if(el.dataset.prompt){if(innerWidth<=760)setSidebar(false);submit(el.dataset.prompt);}
+    if(el.hasAttribute('data-copy-code')){const code=el.closest('.markdown-code')?.querySelector('code');if(code)try{await navigator.clipboard.writeText(code.textContent);toast('Код скопирован');}catch{toast('Не удалось скопировать код');}}
     if(el.hasAttribute('data-copy')){const m=active()?.messages[Number(el.dataset.copy)];if(m)try{await navigator.clipboard.writeText(m.text);toast('Ответ скопирован');}catch{toast('Не удалось скопировать. Выделите текст ответа.');}}
     if(el.hasAttribute('data-like')){const m=active()?.messages[Number(el.dataset.like)];if(m){m.liked=!m.liked;el.classList.toggle('selected',m.liked);el.setAttribute('aria-pressed',String(m.liked));save();toast(m.liked?'Отметка сохранена в этом браузере':'Отметка снята');}}
-    if(el.hasAttribute('data-retry')&&!busy&&!linked(active())){const chat=active(),index=Number(el.dataset.retry),prior=chat?.messages.slice(0,index);const question=[...(prior||[])].reverse().find(m=>m.role==='user');if(question){chat.messages=prior;save();answer(chat,question.text,prior,visual);}}
-    if(el.classList.contains('jump'))bottom();
+    if(el.hasAttribute('data-retry')&&!busy&&!linked(active())){const chat=active(),index=Number(el.dataset.retry),prior=chat?.messages.slice(0,index);const question=[...(prior||[])].reverse().find(m=>m.role==='user');if(question){followLatest=true;scrollIntentUntil=0;chat.messages=prior;save();answer(chat,question.text,prior,visual);}}
+    if(el.classList.contains('jump'))bottom(true);
   });
   let undo=null;
-  document.addEventListener('keydown',e=>{if(!handoffDialog.open&&(e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();newChat();}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'&&undo&&!['INPUT','TEXTAREA'].includes(e.target.tagName)){e.preventDefault();chats.splice(undo.index,0,undo.chat);undo=null;save();render();toast('Чат восстановлен');}if(e.key==='Escape'&&innerWidth<=760)setSidebar(false);});
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Tab' && innerWidth<=760 && document.body.classList.contains('sidebar-open')){
+      const items=[...sidebar.querySelectorAll('a[href],button:not([disabled]),input')];
+      const first=items[0],last=items.at(-1);
+      if(e.shiftKey && (!sidebar.contains(document.activeElement)||document.activeElement===first)){e.preventDefault();last?.focus({preventScroll:true});}
+      else if(!e.shiftKey && (!sidebar.contains(document.activeElement)||document.activeElement===last)){e.preventDefault();first?.focus({preventScroll:true});}
+    }
+    if(!handoffDialog.open&&(e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='k'){e.preventDefault();newChat();}if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='z'&&undo&&!['INPUT','TEXTAREA'].includes(e.target.tagName)){e.preventDefault();chats.splice(undo.index,0,undo.chat);undo=null;save();render();toast('Чат восстановлен');}if(e.key==='Escape'&&innerWidth<=760)setSidebar(false);});
   dialog.addEventListener('click',e=>{if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)dialog.close();}});
-  scroller.addEventListener('scroll',updateJump,{passive:true});
-  let mobile=innerWidth<=760;window.addEventListener('resize',()=>{if(mobile!==(innerWidth<=760)){mobile=innerWidth<=760;document.body.classList.remove('sidebar-open','sidebar-closed');sidebar.inert=mobile;}updateJump();});
+  const scrollIntent=()=>{scrollIntentUntil=performance.now()+1200;};
+  scroller.addEventListener('touchmove',scrollIntent,{passive:true});
+  scroller.addEventListener('wheel',scrollIntent,{passive:true});
+  scroller.addEventListener('pointerdown',scrollIntent,{passive:true});
+  scroller.addEventListener('keydown',event=>{if(['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '].includes(event.key))scrollIntent();});
+  scroller.addEventListener('scroll',()=>{
+    if(performance.now()<scrollIntentUntil)followLatest=scroller.scrollHeight-scroller.scrollTop-scroller.clientHeight<100;
+    updateJump();
+  },{passive:true});
+  // Images, a growing composer and the software keyboard must not move a reader away from old messages.
+  if(window.ResizeObserver){
+    const resize=new ResizeObserver(()=>{if(followLatest)bottom();else updateJump();});
+    resize.observe(thread);resize.observe(scroller);
+  }
+  window.addEventListener('psl:viewport',()=>{if(followLatest)bottom();});
+  thread.addEventListener('load',()=>{if(followLatest)bottom();},true);
+  send.addEventListener('pointerdown',event=>{
+    if(innerWidth<=760 && document.activeElement===input)event.preventDefault();
+  });
+  let mobile=innerWidth<=760;window.addEventListener('resize',()=>{if(mobile!==(innerWidth<=760)){mobile=innerWidth<=760;document.body.classList.remove('sidebar-open','sidebar-closed');sidebar.inert=mobile;document.querySelector('.workspace').inert=false;}updateJump();});
   sidebar.inert=mobile;
   (window.PSL_PRODUCTS_READY || Promise.resolve()).then(() => {
     const url=new URL(location.href);
